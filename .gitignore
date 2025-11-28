@@ -170,6 +170,17 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
+# Large ML model files (keep videos/audio, exclude models)
+*.pt
+*.pth
+*.pte
+*.tflite
+
+# Model directories
+models/
+mobile/assets/models/
+python-tools/models/
+
 # Misc
 *.log
 .cache/
