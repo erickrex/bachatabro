@@ -20,17 +20,24 @@ A motion-based dance educational game for ARM powered devices where players foll
 ## Quick Start
 
 ```bash
-# Clone and install
+# 1. Clone repository
 git clone <repository-url>
-cd bachatrainer/mobile
-npm install
+cd bachatrainer
 
-# Run
+# 2. Generate AI models (required, ~5-10 min)
+cd python-tools
+./setup_models.sh
+
+# 3. Install and run mobile app
+cd ../mobile
+npm install
 npm start
 # Press 'i' for iOS or 'a' for Android
 ```
 
-**Prerequisites**: Node.js 20+, Expo CLI, iOS Simulator or Android Emulator
+**Prerequisites**: Node.js 20+, Expo CLI, Python 3.12+, UV package manager
+
+**Note**: Models are generated locally (not in git due to size). The setup script handles everything automatically.
 
 ---
 

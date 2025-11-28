@@ -1,2 +1,26 @@
+# Git attributes for Bacha Trainer
+
+# Videos and audio are tracked in regular git (89MB total)
+# Not using LFS to keep setup simple
+# Mark binary files
+*.mp4 binary
+*.mp3 binary
+*.pt binary
+*.pte binary
+*.tflite binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+# Ensure consistent line endings
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+# Make shell scripts executable
 *.mp4 filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
