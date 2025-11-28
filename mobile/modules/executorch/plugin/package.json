@@ -1,0 +1,17 @@
+{
+  "name": "@bachatrainer/executorch-plugin",
+  "version": "1.0.0",
+  "description": "Expo config plugin for ExecuTorch",
+  "main": "src/index.ts",
+  "scripts": {},
+  "keywords": [
+    "expo",
+    "config-plugin",
+    "executorch"
+  ],
+  "author": "Bacha Trainer Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@expo/config-plugins": "^7.0.0"
+  }
+}
