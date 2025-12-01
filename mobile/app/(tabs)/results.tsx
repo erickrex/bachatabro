@@ -10,7 +10,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn, SlideInUp, FadeInDown } from 'react-native-reanimated';
 import { useGameStore } from '@/store/gameStore';
-import { saveScore } from '@/services/database';
+import { saveScore, initDatabase } from '@/services/database';
 
 export default function ResultsScreen() {
   const router = useRouter();
@@ -22,6 +22,8 @@ export default function ResultsScreen() {
     const saveFinalScore = async () => {
       if (finalScore !== null && currentSong && !scoreSaved) {
         try {
+          // Initialize database first
+          await initDatabase();
           await saveScore(currentSong.id, finalScore, 'Player');
           setScoreSaved(true);
           console.log('Score saved:', finalScore);

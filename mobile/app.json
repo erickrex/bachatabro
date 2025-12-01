@@ -22,7 +22,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.erickrhein.bachatrainer"
     },
     "web": {
       "bundler": "metro",
@@ -41,6 +46,12 @@
     "jsEngine": "hermes",
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "da1502cb-079f-494d-8c0a-70fae92938c8"
+      }
     }
   }
 }

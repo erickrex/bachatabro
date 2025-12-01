@@ -2,7 +2,7 @@
 name = "bachatrainer-tools"
 version = "2.0.0"
 description = "Development tools for Bacha Trainer - Video preprocessing and pose extraction"
-requires-python = ">=3.12.6"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "opencv-python>=4.10.0",
     "numpy>=2.1.2",

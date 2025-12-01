@@ -13,7 +13,7 @@ import { DualVideoView } from '@/components/Game/DualVideoView';
 import { ScoreDisplay } from '@/components/Game/ScoreDisplay';
 import { ModeIndicator } from '@/components/Game/ModeIndicator';
 import { useGameStore } from '@/store/gameStore';
-import { loadPoseData } from '@/services/assetLoader';
+import { loadPoseData, loadVideo } from '@/services/assetLoader';
 import { calculateFrameScore } from '@/services/scoreCalculator';
 import { UnifiedPoseDetectionService } from '@/services/poseDetection';
 import { PoseData, Song } from '@/types/game';
@@ -38,6 +38,7 @@ export default function GameScreen() {
 
   // Local state
   const [poseData, setPoseData] = useState<PoseData | null>(null);
+  const [videoUri, setVideoUri] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentScore, setCurrentScore] = useState(0);
   const [averageScore, setAverageScore] = useState(0);
@@ -87,6 +88,10 @@ export default function GameScreen() {
         const data = await loadPoseData(songId);
         setPoseData(data);
         setReady(data);
+
+        // Load video asset
+        const videoPath = await loadVideo(songId);
+        setVideoUri(videoPath);
         
         // Start playing after a short delay
         setTimeout(() => {
@@ -215,8 +220,15 @@ export default function GameScreen() {
     );
   }
 
-  // Get video URI
-  const videoUri = `https://example.com/videos/${songId}.mp4`; // Replace with actual video URI
+  // Show loading if video not ready
+  if (!videoUri) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#9333ea" />
+        <Text style={styles.loadingText}>Loading video...</Text>
+      </View>
+    );
+  }
 
   // Calculate progress
   const progress = poseData ? currentFrame / poseData.totalFrames : 0;

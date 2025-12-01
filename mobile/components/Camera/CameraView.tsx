@@ -52,8 +52,9 @@ export function CameraView({
         if (cameraRef.current) {
           const photo = await cameraRef.current.takePictureAsync({
             base64: true,
-            quality: 0.7,
+            quality: 0.5,
             skipProcessing: true, // Faster capture
+            shutterSound: false, // Disable shutter sound
           });
 
           if (photo?.base64) {

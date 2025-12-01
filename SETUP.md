@@ -13,14 +13,11 @@ Complete setup guide for new developers.
   ```bash
   curl -LsSf https://astral.sh/uv/install.sh | sh
   ```
-- **Expo CLI**
-  ```bash
-  npm install -g expo-cli
-  ```
 
 ### Platform-Specific
 - **iOS**: Xcode + iOS Simulator (Mac only)
 - **Android**: Android Studio + Android Emulator
+- **Windows/WSL**: See WSL Setup section below
 
 ---
 
@@ -54,6 +51,15 @@ cd ../mobile
 npm install
 ```
 
+**Verify installation:**
+```bash
+# Check node_modules exists
+ls -la node_modules
+
+# Check for missing dependencies
+npm list --depth=0
+```
+
 ### 4. Start Development Server
 ```bash
 npm start
@@ -63,6 +69,12 @@ npm start
 - Press `i` for iOS simulator
 - Press `a` for Android emulator
 - Scan QR code with Expo Go app on physical device
+
+**Note**: For native modules (ExecuTorch), you need a development build, not Expo Go:
+```bash
+npm run android  # For Android device
+npm run ios      # For iOS device (Mac only)
+```
 
 ---
 
@@ -103,6 +115,61 @@ bachatrainer/
 
 ---
 
+## 🪟 WSL Setup (Windows Users)
+
+If you're developing on Windows with WSL:
+
+### 1. Install Node.js in WSL
+```bash
+# Check if Node.js is installed in WSL
+node --version
+npm --version
+
+# If not installed, install Node.js 20.x
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+### 2. Install Python in WSL
+```bash
+# Check Python version
+python3 --version  # Should be 3.12+
+
+# If needed, install Python 3.12
+sudo apt update
+sudo apt install python3.12 python3.12-venv python3-pip
+```
+
+### 3. Install UV in WSL
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.bashrc
+```
+
+### 4. Run Setup from WSL Terminal
+**Important**: Open a WSL terminal (not PowerShell), then:
+```bash
+cd /home/rexbox/RRR/bachatrainer  # Adjust to your path
+cd python-tools
+./setup_models.sh
+
+cd ../mobile
+npm install
+npm start
+```
+
+### 5. Access from Windows
+- The Expo dev server will show a QR code
+- Scan with Expo Go app on your phone
+- Or open the URL in Windows browser for web version
+
+### WSL Troubleshooting
+- **UNC path errors**: Always run npm commands from WSL terminal, not PowerShell
+- **Permission errors**: Don't use `sudo` with npm in WSL
+- **Port issues**: Expo uses port 8081, ensure it's not blocked by Windows firewall
+
+---
+
 ## 🔧 Troubleshooting
 
 ### "UV not found"
@@ -132,9 +199,12 @@ uv run python create_lightweight_model.py
 uv run python export_model.py --quantize
 ```
 
-### "Expo CLI not found"
+### "npm install fails"
 ```bash
-npm install -g expo-cli
+# Clear cache and retry
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
 ```
 
 ### "iOS simulator won't start"
@@ -147,6 +217,11 @@ npm install -g expo-cli
 - Tools > AVD Manager
 - Start an emulator
 - Then try `npm run android` again
+
+### "Expo Go shows 'Unable to resolve module'"
+- You need a development build for native modules
+- Run `npm run android` or `npm run ios` instead
+- Expo Go doesn't support custom native modules like ExecuTorch
 
 ---
 
@@ -190,5 +265,5 @@ After setup:
 
 ---
 
-**Last Updated**: November 28, 2025  
-**Tested on**: macOS (ARM64), Ubuntu 22.04, Windows 11
+**Last Updated**: November 30, 2025  
+**Tested on**: macOS (ARM64), Ubuntu 22.04, Windows 11 (WSL2)
