@@ -30,20 +30,18 @@ class LightweightPoseModel(nn.Module):
         # Extract feature extractor (remove classifier)
         self.backbone = nn.Sequential(*list(mobilenet.children())[:-1])
         
-        # Adaptive pooling to fixed size
-        self.adaptive_pool = nn.AdaptiveAvgPool2d((6, 6))
-        
         # Pose estimation head
-        # MobileNetV3-Small outputs 576 channels
+        # MobileNetV3-Small backbone includes adaptive avg pooling, so output is 576x1x1
+        # After flatten: 576 features
         self.pose_head = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(576 * 6 * 6, 1024),
+            nn.Linear(576, 512),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(1024, 512),
+            nn.Linear(512, 256),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(512, 17 * 3)  # 17 keypoints × 3 (x, y, confidence)
+            nn.Linear(256, 17 * 3)  # 17 keypoints × 3 (x, y, confidence)
         )
         
     def forward(self, x):
@@ -59,11 +57,8 @@ class LightweightPoseModel(nn.Module):
         # Extract features
         features = self.backbone(x)
         
-        # Pool to fixed size
-        pooled = self.adaptive_pool(features)
-        
-        # Predict keypoints
-        keypoints = self.pose_head(pooled)
+        # Predict keypoints (no pooling, just flatten)
+        keypoints = self.pose_head(features)
         
         # Reshape to [B, 17, 3]
         keypoints = keypoints.view(-1, 17, 3)

@@ -69,17 +69,10 @@ def export_to_executorch(
     
     # Apply quantization if requested
     if quantize:
-        print("  Applying dynamic quantization...")
-        try:
-            model = torch.quantization.quantize_dynamic(
-                model,
-                {torch.nn.Linear},  # Quantize Linear layers
-                dtype=torch.qint8
-            )
-            print("  ✓ Quantization applied")
-        except Exception as e:
-            print(f"  ⚠ Quantization failed: {e}")
-            print(f"  Continuing with unquantized model...")
+        print("  ⚠ Dynamic quantization not compatible with ExecuTorch export")
+        print("  Exporting unquantized model instead...")
+        print("  (Quantization can be applied post-export using ExecuTorch tools)")
+        quantize = False  # Disable for now
     
     # Step 1: Export the model
     print("  Step 1: Exporting model...")

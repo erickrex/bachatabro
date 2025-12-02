@@ -75,7 +75,7 @@ export class UnifiedPoseDetectionService {
     if (currentMode === DetectionMode.REAL_TIME || currentMode === DetectionMode.AUTO) {
       try {
         this.execuTorchService = new ExecuTorchService();
-        await this.execuTorchService.initialize('movenet.pte');
+        await this.execuTorchService.initialize('pose.pte');
         console.log('ExecuTorch service initialized for real-time detection');
       } catch (error) {
         console.warn('Failed to initialize ExecuTorch, falling back to pre-computed:', error);

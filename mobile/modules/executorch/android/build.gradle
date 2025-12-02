@@ -60,7 +60,12 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'com.facebook.react:react-native:+'
     
-    // ExecuTorch AAR
+    // ExecuTorch AAR (optional - only if file exists)
     // Note: executorch-android.aar should be placed in android/libs/
-    implementation files('libs/executorch-android.aar')
+    def execuTorchAar = file('libs/executorch-android.aar')
+    if (execuTorchAar.exists()) {
+        implementation files('libs/executorch-android.aar')
+    } else {
+        println "⚠️  ExecuTorch AAR not found - module will use stub implementation"
+    }
 }
