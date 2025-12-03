@@ -60,12 +60,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'com.facebook.react:react-native:+'
     
-    // ExecuTorch AAR (optional - only if file exists)
-    // Note: executorch-android.aar should be placed in android/libs/
-    def execuTorchAar = file('libs/executorch-android.aar')
-    if (execuTorchAar.exists()) {
-        implementation files('libs/executorch-android.aar')
-    } else {
-        println "⚠️  ExecuTorch AAR not found - module will use stub implementation"
-    }
+    // ExecuTorch 1.0 GA - From Maven Central (Official)
+    // https://docs.pytorch.org/executorch/stable/using-executorch-android.html
+    implementation 'org.pytorch:executorch-android:1.0.0'
+    
+    // Required dependencies for ExecuTorch AAR
+    implementation 'com.facebook.fbjni:fbjni:0.6.0'
+    implementation 'com.facebook.soloader:soloader:0.11.0'
 }

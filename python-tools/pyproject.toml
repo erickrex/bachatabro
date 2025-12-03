@@ -16,7 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 executorch = [
-    "executorch>=0.2.0",
+    "executorch>=1.0.0",
 ]
 dev = [
     "pytest>=7.0.0",

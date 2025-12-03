@@ -7,16 +7,16 @@
  */
 
 import { calculateAngles } from '../utils/angleCalculator';
-import { TFJSPoseService } from './executorch/TFJSPoseService';
+import { ExecuTorchService } from './executorch/ExecuTorchService';
 import { DetectionModeManager } from './executorch/DetectionModeManager';
 import { loadPoseData } from './assetLoader';
 import { DetectionMode, DetectionInput, PoseAngles } from '@/types/detection';
 import { PoseData } from '@/types/game';
 import { MODEL_CONFIG } from '@/constants/ModelConfig';
 
-// Use TensorFlow.js for real on-device inference
-// This replaces the stubbed ExecuTorch native module
-type PoseService = TFJSPoseService;
+// Use ExecuTorch 1.0 for Arm-optimized on-device inference
+// XNNPACK backend provides Arm NEON acceleration
+type PoseService = ExecuTorchService;
 
 export interface Keypoint {
   x: number;
@@ -77,16 +77,16 @@ export class UnifiedPoseDetectionService {
 
     const currentMode = this.modeManager.getCurrentMode();
 
-    // Initialize TensorFlow.js for real-time mode
-    // Uses MoveNet model for on-device inference
+    // Initialize ExecuTorch for real-time mode
+    // Uses XNNPACK backend for Arm NEON acceleration
     if (currentMode === DetectionMode.REAL_TIME || currentMode === DetectionMode.AUTO) {
       try {
-        this.poseService = new TFJSPoseService();
-        await this.poseService.initialize();
-        console.log('TensorFlow.js pose service initialized for real-time detection');
+        this.poseService = new ExecuTorchService();
+        await this.poseService.initialize(MODEL_CONFIG.MODEL_FILE);
+        console.log(`ExecuTorch 1.0 initialized with ${MODEL_CONFIG.MODEL_VERSION} for real-time detection`);
       } catch (error) {
-        console.warn('Failed to initialize TensorFlow.js, falling back to pre-computed:', error);
-        this.modeManager.triggerFallback('TensorFlow.js initialization failed');
+        console.warn('Failed to initialize ExecuTorch, falling back to pre-computed:', error);
+        this.modeManager.triggerFallback('ExecuTorch initialization failed');
       }
     }
 
