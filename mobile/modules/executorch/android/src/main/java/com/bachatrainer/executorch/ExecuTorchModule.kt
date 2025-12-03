@@ -156,11 +156,14 @@ class ExecuTorchModule(reactContext: ReactApplicationContext) :
                 longArrayOf(1, 3, MODEL_INPUT_SIZE.toLong(), MODEL_INPUT_SIZE.toLong())
             )
 
+            // Wrap tensor in EValue for ExecuTorch forward pass
+            val inputEValue = EValue.from(inputTensor)
+
             // Run ExecuTorch inference
-            val outputs = module!!.forward(inputTensor)
+            val outputs = module!!.forward(inputEValue)
             
-            // Parse output to keypoints
-            val keypoints = parseExecuTorchOutput(outputs)
+            // Parse output to keypoints (outputs is an array, get first element)
+            val keypoints = parseExecuTorchOutput(outputs[0])
 
             val endTime = System.currentTimeMillis()
             val inferenceTime = (endTime - startTime).toDouble()
