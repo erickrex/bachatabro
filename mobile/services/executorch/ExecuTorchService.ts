@@ -6,6 +6,8 @@
  */
 
 import { NativeModules, Platform } from 'react-native';
+import { Asset } from 'expo-asset';
+import { Paths, File, Directory } from 'expo-file-system';
 import { PoseResult } from '@/types/detection';
 
 const { ExecuTorchModule } = NativeModules;
@@ -18,20 +20,61 @@ export class ExecuTorchService {
   /**
    * Initialize the ExecuTorch service and load the model
    */
-  async initialize(modelPath: string): Promise<void> {
+  async initialize(modelFileName: string): Promise<void> {
     if (!ExecuTorchModule) {
       throw new Error('ExecuTorchModule not available. Native module not linked.');
     }
 
     try {
+      // Extract model from bundled assets to device filesystem
+      const modelPath = await this.extractModelToFilesystem(modelFileName);
+      
       await ExecuTorchModule.loadModel(modelPath);
       await this.configureDelegate();
       this.modelLoaded = true;
-      console.log('ExecuTorch model loaded successfully');
+      console.log('ExecuTorch model loaded successfully from:', modelPath);
     } catch (error) {
       console.error('Failed to initialize ExecuTorch:', error);
       throw new Error(`ExecuTorch initialization failed: ${error}`);
     }
+  }
+
+  /**
+   * Extract model from app assets to device filesystem
+   * ExecuTorch requires a file path, not a bundled asset
+   */
+  private async extractModelToFilesystem(modelFileName: string): Promise<string> {
+    // Use new expo-file-system v19 API
+    const modelsDir = new Directory(Paths.document, 'models');
+    const destFile = new File(modelsDir, modelFileName);
+    
+    // Check if model already exists on filesystem
+    if (destFile.exists) {
+      console.log('Model already extracted at:', destFile.uri);
+      // Return path without file:// prefix for native module
+      return destFile.uri.replace('file://', '');
+    }
+
+    // Create models directory if needed
+    if (!modelsDir.exists) {
+      await modelsDir.create();
+    }
+
+    // Load model from bundled assets
+    const modelAsset = Asset.fromModule(require('../../assets/models/pose.pte'));
+    await modelAsset.downloadAsync();
+
+    if (!modelAsset.localUri) {
+      throw new Error('Failed to download model asset');
+    }
+
+    // Copy from asset to destination
+    const sourceFile = new File(modelAsset.localUri);
+    await sourceFile.copy(destFile);
+
+    console.log('Model extracted to:', destFile.uri);
+    // Return path without file:// prefix for native module
+    return destFile.uri.replace('file://', '');
   }
 
   /**

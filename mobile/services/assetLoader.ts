@@ -38,11 +38,6 @@ export interface Song {
 
 // Available songs
 export const SONGS: Song[] = [
-  { id: 'cheapthrills', title: 'Cheap Thrills', artist: 'Sia', difficulty: 'medium' },
-  { id: 'uptownfunk', title: 'Uptown Funk', artist: 'Bruno Mars', difficulty: 'hard' },
-  { id: 'dontstartnow', title: "Don't Start Now", artist: 'Dua Lipa', difficulty: 'medium' },
-  { id: 'callmemaybe', title: 'Call Me Maybe', artist: 'Carly Rae Jepsen', difficulty: 'easy' },
-  { id: 'ghungroo', title: 'Ghungroo', artist: 'Arijit Singh', difficulty: 'hard' },
   { id: 'howdeepisyourlove', title: 'How Deep Is Your Love', artist: 'Prince Royce', difficulty: 'medium' },
   { id: '30minutos', title: '30 Minutos', artist: 'Prince Royce', difficulty: 'medium' }
 ];
@@ -67,21 +62,6 @@ export async function loadPoseData(songId: string): Promise<PoseData> {
     let poseData: PoseData;
 
     switch (songId) {
-      case 'cheapthrills':
-        poseData = require('../assets/poses/cheapthrills.json');
-        break;
-      case 'uptownfunk':
-        poseData = require('../assets/poses/uptownfunk.json');
-        break;
-      case 'dontstartnow':
-        poseData = require('../assets/poses/dontstartnow.json');
-        break;
-      case 'callmemaybe':
-        poseData = require('../assets/poses/callmemaybe.json');
-        break;
-      case 'ghungroo':
-        poseData = require('../assets/poses/ghungroo.json');
-        break;
       case 'howdeepisyourlove':
         poseData = require('../assets/poses/howdeepisyourlove.json');
         break;
@@ -116,21 +96,6 @@ export async function loadVideo(songId: string): Promise<string> {
     let videoModule: number;
 
     switch (songId) {
-      case 'cheapthrills':
-        videoModule = require('../assets/videos/cheapthrills.mp4');
-        break;
-      case 'uptownfunk':
-        videoModule = require('../assets/videos/uptownfunk.mp4');
-        break;
-      case 'dontstartnow':
-        videoModule = require('../assets/videos/dontstartnow.mp4');
-        break;
-      case 'callmemaybe':
-        videoModule = require('../assets/videos/callmemaybe.mp4');
-        break;
-      case 'ghungroo':
-        videoModule = require('../assets/videos/ghungroo.mp4');
-        break;
       case 'howdeepisyourlove':
         videoModule = require('../assets/videos/howdeepisyourlove.mp4');
         break;
@@ -172,21 +137,6 @@ export async function loadAudio(songId: string): Promise<string> {
     let audioModule: number;
 
     switch (songId) {
-      case 'cheapthrills':
-        audioModule = require('../assets/audio/cheapthrills.mp3');
-        break;
-      case 'uptownfunk':
-        audioModule = require('../assets/audio/uptownfunk.mp3');
-        break;
-      case 'dontstartnow':
-        audioModule = require('../assets/audio/dontstartnow.mp3');
-        break;
-      case 'callmemaybe':
-        audioModule = require('../assets/audio/callmemaybe.mp3');
-        break;
-      case 'ghungroo':
-        audioModule = require('../assets/audio/ghungroo.mp3');
-        break;
       case 'howdeepisyourlove':
         audioModule = require('../assets/audio/howdeepisyourlove.mp3');
         break;

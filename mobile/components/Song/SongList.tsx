@@ -17,34 +17,16 @@ export interface SongListProps {
 // Available songs in the app
 const SONGS: Song[] = [
   {
-    id: 'cheapthrills',
-    title: 'Cheap Thrills',
-    artist: 'Sia',
+    id: '30minutos',
+    title: '30 Minutos',
+    artist: 'Prince Royce',
     difficulty: 'medium',
   },
   {
-    id: 'uptownfunk',
-    title: 'Uptown Funk',
-    artist: 'Bruno Mars',
-    difficulty: 'hard',
-  },
-  {
-    id: 'dontstartnow',
-    title: "Don't Start Now",
-    artist: 'Dua Lipa',
+    id: 'howdeepisyourlove',
+    title: 'How Deep Is Your Love',
+    artist: 'Prince Royce',
     difficulty: 'medium',
-  },
-  {
-    id: 'callmemaybe',
-    title: 'Call Me Maybe',
-    artist: 'Carly Rae Jepsen',
-    difficulty: 'easy',
-  },
-  {
-    id: 'ghungroo',
-    title: 'Ghungroo',
-    artist: 'Arijit Singh',
-    difficulty: 'hard',
   },
 ];
 
