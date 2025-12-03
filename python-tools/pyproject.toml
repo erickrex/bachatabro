@@ -1,16 +1,27 @@
 [project]
 name = "bachatrainer-tools"
-version = "2.0.0"
-description = "Development tools for Bacha Trainer - Video preprocessing and pose extraction"
-requires-python = ">=3.12,<3.13"
+version = "3.0.0"
+description = "Development tools for Bacha Trainer - Video preprocessing and pose extraction using YOLOv8s-pose"
+requires-python = ">=3.10"
 dependencies = [
     "opencv-python>=4.10.0",
-    "numpy>=2.1.2",
-    "pillow>=11.0.0",
+    "numpy>=1.24.0",
+    "pillow>=10.0.0",
     "tqdm>=4.66.0",
-    "executorch>=1.0.0",
     "torch>=2.1.0",
     "torchvision>=0.16.0",
+    "ultralytics>=8.0.0",
+    "yt-dlp>=2024.0.0",
+]
+
+[project.optional-dependencies]
+executorch = [
+    "executorch>=0.2.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
 ]
 
 [build-system]

@@ -2,26 +2,22 @@
 
 ML development tools for creating and exporting pose estimation models.
 
+**Now using YOLOv8s-pose for improved accuracy (64.0 AP vs ~50-55 AP)**
+
 ---
 
-## 🚀 Quick Start (For New Developers)
-
-If you just cloned the repo, you need to generate the models:
+## 🚀 Quick Start
 
 ```bash
 cd python-tools
-./setup_models.sh
+uv sync
+uv run python batch_process_yolov8.py ../songs/
 ```
 
 This will:
-1. Install Python dependencies
-2. Create the lightweight pose model
-3. Export to ExecuTorch format
-4. Validate the models
-5. Copy to mobile app
-
-**Time**: ~5-10 minutes  
-**Output**: 8.5MB quantized model ready for mobile
+1. Download YOLOv8s-pose model automatically
+2. Process all videos in the songs directory
+3. Generate JSON pose files in `../mobile/assets/poses/`
 
 ---
 
@@ -32,169 +28,145 @@ This will:
   curl -LsSf https://astral.sh/uv/install.sh | sh
   ```
 
-- **Python 3.12+**
+- **Python 3.10+**
 - **PyTorch 2.1+** (installed via uv sync)
-- **ExecuTorch** (installed via uv sync)
 
 ---
 
-## 🛠️ Manual Setup
+## 🎯 Model Comparison
 
-If you prefer manual steps:
+| Model | Accuracy (COCO AP) | Year | Status |
+|-------|-------------------|------|--------|
+| MobileNetV3-Small (old) | ~50-55 | 2019 | Deprecated |
+| **YOLOv8s-pose (new)** | **64.0** | 2023 | ✅ Current |
 
-### 1. Install Dependencies
-
-```bash
-cd python-tools
-uv sync
-```
-
-### 2. Create Pose Model
-
-```bash
-uv run python create_lightweight_model.py
-```
-
-Creates `models/lightweight_pose.pt` (87MB PyTorch model)
-
-### 3. Export to ExecuTorch
-
-```bash
-uv run python export_model.py \
-  --input models/lightweight_pose.pt \
-  --output models/pose_model.pte \
-  --quantize
-```
-
-Creates:
-- `models/pose_model.pte` (87MB)
-- `models/pose_model_quantized.pte` (8.5MB) ⭐ Use this one
-
-### 4. Validate Model
-
-```bash
-uv run python validate_model.py \
-  --model models/pose_model_quantized.pte
-```
-
-### 5. Copy to Mobile App
-
-```bash
-cp models/pose_model_quantized.pte ../mobile/assets/models/pose.pte
-```
+**~20-25% improvement in pose estimation accuracy!**
 
 ---
 
-## 📁 Generated Files
+## 🛠️ Available Scripts
 
-After running setup, you'll have:
+### Video Preprocessing (YOLOv8s-pose)
 
-```
-python-tools/models/
-├── lightweight_pose.pt          # PyTorch model (87MB)
-├── pose_model.pte               # ExecuTorch model (87MB)
-├── pose_model_quantized.pte     # Quantized model (8.5MB) ⭐
-└── README.md
-
-mobile/assets/models/
-└── pose.pte                     # Quantized model for app (8.5MB) ⭐
+Process a single video:
+```bash
+uv run python preprocess_video_yolov8.py path/to/video.mp4
 ```
 
-**Note**: Model files are gitignored (too large for GitHub). Each developer generates them locally.
+Process all videos in a directory:
+```bash
+uv run python batch_process_yolov8.py ../songs/ --output ../mobile/assets/poses/
+```
 
----
+Options:
+- `--device auto|cpu|cuda|mps` - Select compute device
+- `--model yolov8s-pose.pt` - Model to use (default: yolov8s-pose.pt)
 
-## 🎬 Video Preprocessing (Optional)
-
-Process reference videos to extract pose data:
+### Export to ExecuTorch (for mobile)
 
 ```bash
-uv run python preprocess_video_executorch.py \
-  --video ../songs/cheapthrills.mp4 \
-  --output ../mobile/assets/poses/
+uv run python export_model_yolov8.py --output models/yolov8s_pose.pte
 ```
 
-This creates JSON files with pre-computed pose data for fallback mode.
+This exports the model for use in the React Native app.
+
+### Legacy Scripts (deprecated)
+
+These still work but use the older, less accurate model:
+- `preprocess_video_executorch.py` - MobileNetV3-based preprocessing
+- `create_lightweight_model.py` - Creates MobileNetV3-based model
+- `export_model.py` - Exports MobileNetV3-based model
 
 ---
 
-## 📜 Available Scripts
+## 📁 Output Format
 
-| Script | Purpose | Output |
-|--------|---------|--------|
-| `setup_models.sh` | One-command setup | All models ready |
-| `create_lightweight_model.py` | Create PyTorch model | `.pt` file |
-| `export_model.py` | Export to ExecuTorch | `.pte` files |
-| `validate_model.py` | Validate model accuracy | Validation report |
-| `preprocess_video_executorch.py` | Process videos | JSON pose data |
+The JSON pose files have the same format as before (backward compatible):
+
+```json
+{
+  "songId": "cheapthrills",
+  "fps": 30.0,
+  "totalFrames": 1500,
+  "modelVersion": "yolov8s-pose",
+  "modelAccuracy": "64.0 AP (COCO)",
+  "frames": [
+    {
+      "frameNumber": 0,
+      "timestamp": 0.0,
+      "keypoints": {
+        "nose": {"x": 0.5, "y": 0.3, "confidence": 0.95},
+        "leftShoulder": {"x": 0.4, "y": 0.5, "confidence": 0.92},
+        ...
+      },
+      "angles": {
+        "leftArm": 145.5,
+        "rightArm": 150.2,
+        ...
+      }
+    }
+  ]
+}
+```
 
 ---
 
 ## 🔧 Troubleshooting
 
-### "UV not found"
+### "ultralytics not found"
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source ~/.zshrc  # or ~/.bashrc
+uv sync
+# or
+pip install ultralytics
 ```
 
-### "Model validation failed"
-- Check PyTorch version: `uv run python -c "import torch; print(torch.__version__)"`
-- Should be 2.1+
-
-### "Out of memory"
-- Model creation needs ~4GB RAM
-- Close other applications
-
-### "ExecuTorch import error"
+### "CUDA out of memory"
+Use CPU instead:
 ```bash
-cd python-tools
-uv sync --reinstall
+uv run python batch_process_yolov8.py ../songs/ --device cpu
 ```
+
+### "Model download failed"
+YOLOv8s-pose downloads automatically on first use. If it fails:
+```bash
+# Manual download
+uv run python -c "from ultralytics import YOLO; YOLO('yolov8s-pose.pt')"
+```
+
+### "ExecuTorch export failed"
+ExecuTorch export is optional. The preprocessing works without it.
+For mobile, you can use the PyTorch model directly or wait for ExecuTorch support.
 
 ---
 
-## 📊 Model Specifications
+## 📊 Performance
 
-| Model | Size | Format | Quantized | Use Case |
-|-------|------|--------|-----------|----------|
-| lightweight_pose.pt | 87MB | PyTorch | No | Development |
-| pose_model.pte | 87MB | ExecuTorch | No | Testing |
-| pose_model_quantized.pte | 8.5MB | ExecuTorch | Yes | Production ⭐ |
-
-**Recommended**: Use `pose_model_quantized.pte` for mobile app (8.5MB, <5% accuracy loss)
+| Device | Speed (FPS) | Notes |
+|--------|-------------|-------|
+| NVIDIA GPU | ~100+ | Recommended for batch processing |
+| Apple M1/M2 | ~30-50 | Use `--device mps` |
+| CPU | ~5-10 | Slower but works everywhere |
 
 ---
 
-## 🎯 Why Models Aren't in Git
+## 🎬 Workflow
 
-Model files are **not tracked in git** because:
-- Too large for GitHub (>100MB limit)
-- Binary files don't compress well
-- Easy to regenerate from scripts
-- Keeps repo size small
-
-Each developer generates models locally using the provided scripts.
+1. **Record dance videos** → Save to `../songs/`
+2. **Run preprocessing** → `uv run python batch_process_yolov8.py ../songs/`
+3. **JSON files generated** → `../mobile/assets/poses/`
+4. **Mobile app uses JSON** → Pre-computed poses for reference
 
 ---
 
 ## 📖 Additional Documentation
 
+- **[../HOW_POSES_WORK.md](../HOW_POSES_WORK.md)** - How pose detection works
 - **[../README.md](../README.md)** - Project overview
-- **[../.kiro/specs/executorch-integration/](../.kiro/specs/executorch-integration/)** - Full specification
-- **[../mobile/modules/executorch/SETUP.md](../mobile/modules/executorch/SETUP.md)** - Native module setup
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide
 
 ---
 
-## 🆘 Need Help?
-
-1. Check [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
-2. Review [.kiro/specs/executorch-integration/design.md](../.kiro/specs/executorch-integration/design.md)
-3. Open an issue on GitHub
-
----
-
-**Last Updated**: November 28, 2025  
-**Python**: 3.12+  
-**PyTorch**: 2.1+  
-**ExecuTorch**: 0.1.0+
+**Last Updated**: December 2, 2025  
+**Model**: YOLOv8s-pose (64.0 AP)  
+**Python**: 3.10+  
+**PyTorch**: 2.1+

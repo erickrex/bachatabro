@@ -300,10 +300,12 @@ describe('Integration: Real-Time Detection Flow', () => {
 
 // Helper functions
 function generateTestFrame(frameNumber: number): any {
+  // YOLOv8s-pose uses 256x256 input
+  const MODEL_INPUT_SIZE = 256;
   return {
-    width: 192,
-    height: 192,
-    data: new Uint8Array(192 * 192 * 3).fill(128),
+    width: MODEL_INPUT_SIZE,
+    height: MODEL_INPUT_SIZE,
+    data: new Uint8Array(MODEL_INPUT_SIZE * MODEL_INPUT_SIZE * 3).fill(128),
     frameNumber,
   };
 }

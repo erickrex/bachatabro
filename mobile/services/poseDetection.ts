@@ -2,15 +2,21 @@
  * Unified Pose Detection Service
  * Supports both real-time ExecuTorch detection and pre-computed pose data
  * 
+ * Updated for YOLOv8s-pose model (64.0 AP on COCO)
  * Task 3.1.3: Update Unified Pose Detection Service
  */
 
 import { calculateAngles } from '../utils/angleCalculator';
-import { ExecuTorchService } from './executorch/ExecuTorchService';
+import { TFJSPoseService } from './executorch/TFJSPoseService';
 import { DetectionModeManager } from './executorch/DetectionModeManager';
 import { loadPoseData } from './assetLoader';
 import { DetectionMode, DetectionInput, PoseAngles } from '@/types/detection';
 import { PoseData } from '@/types/game';
+import { MODEL_CONFIG } from '@/constants/ModelConfig';
+
+// Use TensorFlow.js for real on-device inference
+// This replaces the stubbed ExecuTorch native module
+type PoseService = TFJSPoseService;
 
 export interface Keypoint {
   x: number;
@@ -48,7 +54,7 @@ export interface PoseDetectionResult {
  * Manages both real-time and pre-computed detection modes
  */
 export class UnifiedPoseDetectionService {
-  private execuTorchService?: ExecuTorchService;
+  private poseService?: PoseService;
   private modeManager: DetectionModeManager;
   private precomputedCache: Map<string, PoseData> = new Map();
   private initialized = false;
@@ -71,15 +77,16 @@ export class UnifiedPoseDetectionService {
 
     const currentMode = this.modeManager.getCurrentMode();
 
-    // Initialize ExecuTorch for real-time mode
+    // Initialize TensorFlow.js for real-time mode
+    // Uses MoveNet model for on-device inference
     if (currentMode === DetectionMode.REAL_TIME || currentMode === DetectionMode.AUTO) {
       try {
-        this.execuTorchService = new ExecuTorchService();
-        await this.execuTorchService.initialize('pose.pte');
-        console.log('ExecuTorch service initialized for real-time detection');
+        this.poseService = new TFJSPoseService();
+        await this.poseService.initialize();
+        console.log('TensorFlow.js pose service initialized for real-time detection');
       } catch (error) {
-        console.warn('Failed to initialize ExecuTorch, falling back to pre-computed:', error);
-        this.modeManager.triggerFallback('ExecuTorch initialization failed');
+        console.warn('Failed to initialize TensorFlow.js, falling back to pre-computed:', error);
+        this.modeManager.triggerFallback('TensorFlow.js initialization failed');
       }
     }
 
@@ -124,14 +131,14 @@ export class UnifiedPoseDetectionService {
   }
 
   /**
-   * Real-time pose detection using ExecuTorch
+   * Real-time pose detection using TensorFlow.js
    */
   private async detectRealTime(imageData: string): Promise<PoseAngles> {
-    if (!this.execuTorchService || !this.execuTorchService.isReady()) {
-      throw new Error('ExecuTorch service not ready');
+    if (!this.poseService || !this.poseService.isReady()) {
+      throw new Error('Pose service not ready');
     }
 
-    const poseResult = await this.execuTorchService.detectPose(imageData);
+    const poseResult = await this.poseService.detectPose(imageData);
     
     // Convert keypoints to KeypointMap format
     const keypointMap = this.convertToKeypointMap(poseResult.keypoints);
@@ -224,7 +231,7 @@ export class UnifiedPoseDetectionService {
     await this.modeManager.setMode(mode);
     
     // Re-initialize if switching to real-time mode
-    if (mode === DetectionMode.REAL_TIME && !this.execuTorchService) {
+    if (mode === DetectionMode.REAL_TIME && !this.poseService) {
       await this.initialize(mode);
     }
   }
@@ -233,14 +240,14 @@ export class UnifiedPoseDetectionService {
    * Get performance metrics
    */
   getPerformanceMetrics() {
-    if (!this.execuTorchService) {
+    if (!this.poseService) {
       return null;
     }
 
     return {
-      averageFPS: this.execuTorchService.getAverageFPS(),
-      averageLatency: this.execuTorchService.getAverageLatency(),
-      ...this.execuTorchService.getLatencyPercentiles(),
+      averageFPS: this.poseService.getAverageFPS(),
+      averageLatency: this.poseService.getAverageLatency(),
+      ...this.poseService.getLatencyPercentiles(),
     };
   }
 

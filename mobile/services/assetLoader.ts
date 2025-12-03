@@ -43,6 +43,8 @@ export const SONGS: Song[] = [
   { id: 'dontstartnow', title: "Don't Start Now", artist: 'Dua Lipa', difficulty: 'medium' },
   { id: 'callmemaybe', title: 'Call Me Maybe', artist: 'Carly Rae Jepsen', difficulty: 'easy' },
   { id: 'ghungroo', title: 'Ghungroo', artist: 'Arijit Singh', difficulty: 'hard' },
+  { id: 'howdeepisyourlove', title: 'How Deep Is Your Love', artist: 'Prince Royce', difficulty: 'medium' },
+  { id: '30minutos', title: '30 Minutos', artist: 'Prince Royce', difficulty: 'medium' }
 ];
 
 // Cache for loaded assets
@@ -58,12 +60,12 @@ export async function loadPoseData(songId: string): Promise<PoseData> {
   if (poseDataCache.has(songId)) {
     return poseDataCache.get(songId)!;
   }
-  
+
   try {
     // Load JSON file from assets
     // Note: The require path needs to be static for Metro bundler
     let poseData: PoseData;
-    
+
     switch (songId) {
       case 'cheapthrills':
         poseData = require('../assets/poses/cheapthrills.json');
@@ -80,13 +82,19 @@ export async function loadPoseData(songId: string): Promise<PoseData> {
       case 'ghungroo':
         poseData = require('../assets/poses/ghungroo.json');
         break;
+      case 'howdeepisyourlove':
+        poseData = require('../assets/poses/howdeepisyourlove.json');
+        break;
+      case '30minutos':
+        poseData = require('../assets/poses/30minutos.json');
+        break;
       default:
         throw new Error(`Unknown song: ${songId}`);
     }
-    
+
     // Cache the data
     poseDataCache.set(songId, poseData);
-    
+
     console.log(`Loaded pose data for ${songId}: ${poseData.totalFrames} frames`);
     return poseData;
   } catch (error) {
@@ -103,10 +111,10 @@ export async function loadVideo(songId: string): Promise<string> {
   if (videoCache.has(songId)) {
     return videoCache.get(songId)!;
   }
-  
+
   try {
     let videoModule: number;
-    
+
     switch (songId) {
       case 'cheapthrills':
         videoModule = require('../assets/videos/cheapthrills.mp4');
@@ -123,20 +131,26 @@ export async function loadVideo(songId: string): Promise<string> {
       case 'ghungroo':
         videoModule = require('../assets/videos/ghungroo.mp4');
         break;
+      case 'howdeepisyourlove':
+        videoModule = require('../assets/videos/howdeepisyourlove.mp4');
+        break;
+      case '30minutos':
+        videoModule = require('../assets/videos/30minutos.mp4');
+        break;
       default:
         throw new Error(`Unknown song: ${songId}`);
     }
-    
+
     const asset = Asset.fromModule(videoModule);
     await asset.downloadAsync();
-    
+
     if (!asset.localUri) {
       throw new Error('Failed to load video asset');
     }
-    
+
     // Cache the URI
     videoCache.set(songId, asset.localUri);
-    
+
     console.log(`Loaded video for ${songId}`);
     return asset.localUri;
   } catch (error) {
@@ -153,10 +167,10 @@ export async function loadAudio(songId: string): Promise<string> {
   if (audioCache.has(songId)) {
     return audioCache.get(songId)!;
   }
-  
+
   try {
     let audioModule: number;
-    
+
     switch (songId) {
       case 'cheapthrills':
         audioModule = require('../assets/audio/cheapthrills.mp3');
@@ -173,20 +187,26 @@ export async function loadAudio(songId: string): Promise<string> {
       case 'ghungroo':
         audioModule = require('../assets/audio/ghungroo.mp3');
         break;
+      case 'howdeepisyourlove':
+        audioModule = require('../assets/audio/howdeepisyourlove.mp3');
+        break;
+      case '30minutos':
+        audioModule = require('../assets/audio/30minutos.mp3');
+        break;
       default:
         throw new Error(`Unknown song: ${songId}`);
     }
-    
+
     const asset = Asset.fromModule(audioModule);
     await asset.downloadAsync();
-    
+
     if (!asset.localUri) {
       throw new Error('Failed to load audio asset');
     }
-    
+
     // Cache the URI
     audioCache.set(songId, asset.localUri);
-    
+
     console.log(`Loaded audio for ${songId}`);
     return asset.localUri;
   } catch (error) {
@@ -200,14 +220,14 @@ export async function loadAudio(songId: string): Promise<string> {
  */
 export async function preloadSongAssets(songId: string): Promise<void> {
   console.log(`Preloading assets for ${songId}...`);
-  
+
   try {
     await Promise.all([
       loadPoseData(songId),
       loadVideo(songId),
       loadAudio(songId),
     ]);
-    
+
     console.log(`All assets loaded for ${songId}`);
   } catch (error) {
     console.error(`Failed to preload assets for ${songId}:`, error);
@@ -248,11 +268,11 @@ export function getFrameAtTimestamp(
 ): PoseFrame | null {
   // Find the closest frame to the timestamp
   const frameIndex = Math.round(timestamp * poseData.fps);
-  
+
   if (frameIndex < 0 || frameIndex >= poseData.frames.length) {
     return null;
   }
-  
+
   return poseData.frames[frameIndex];
 }
 
@@ -266,6 +286,6 @@ export function getFrameByNumber(
   if (frameNumber < 0 || frameNumber >= poseData.frames.length) {
     return null;
   }
-  
+
   return poseData.frames[frameNumber];
 }
