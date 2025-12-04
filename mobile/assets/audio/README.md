@@ -1,10 +1,10 @@
 # Audio
 
-Place music files here:
-- cheapthrills.mp3
-- uptownfunk.mp3
-- dontstartnow.mp3
-- callmemaybe.mp3
-- ghungroo.mp3
+Music files for Bacha Trainer.
 
-**Note**: Audio files are not tracked in git due to size. Download separately or extract from videos.
+## Current Songs
+
+- `30minutos.mp3`
+- `howdeepisyourlove.mp3`
+
+**Note**: Audio files are not tracked in git due to size.
