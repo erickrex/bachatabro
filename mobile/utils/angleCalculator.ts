@@ -20,6 +20,10 @@ export interface Angles {
   rightLeg: number;
 }
 
+// Minimum confidence threshold for keypoint detection
+// Lowered from 0.5 to 0.3 to capture more poses, especially wrists
+const MIN_CONFIDENCE = 0.3;
+
 /**
  * Calculate angle between three points
  * @param p1 First point
@@ -28,10 +32,10 @@ export interface Angles {
  * @returns Angle in degrees (0-180)
  */
 export function calculateAngle(p1: Point, p2: Point, p3: Point): number {
-  // Check confidence if available
-  if (p1.confidence !== undefined && p1.confidence < 0.5) return 0;
-  if (p2.confidence !== undefined && p2.confidence < 0.5) return 0;
-  if (p3.confidence !== undefined && p3.confidence < 0.5) return 0;
+  // Check confidence if available - use lower threshold for better coverage
+  if (p1.confidence !== undefined && p1.confidence < MIN_CONFIDENCE) return 0;
+  if (p2.confidence !== undefined && p2.confidence < MIN_CONFIDENCE) return 0;
+  if (p3.confidence !== undefined && p3.confidence < MIN_CONFIDENCE) return 0;
   
   // Calculate vectors from p2 to p1 and p2 to p3
   const v1x = p1.x - p2.x;

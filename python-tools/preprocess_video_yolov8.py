@@ -143,17 +143,19 @@ class YOLOv8PoseDetector:
         return keypoints
 
 
-def calculate_angle(p1: Dict, p2: Dict, p3: Dict) -> float:
+def calculate_angle(p1: Dict, p2: Dict, p3: Dict, min_confidence: float = 0.3) -> float:
     """
     Calculate angle between three points.
     
     Args:
         p1, p2, p3: Points with 'x', 'y', 'confidence' keys
+        min_confidence: Minimum confidence threshold (default 0.3 for better coverage)
         
     Returns:
         Angle in degrees
     """
-    if not all(p['confidence'] > 0.5 for p in [p1, p2, p3]):
+    # Lower threshold to 0.3 to capture more poses, especially wrists
+    if not all(p['confidence'] > min_confidence for p in [p1, p2, p3]):
         return 0.0
     
     # Calculate vectors

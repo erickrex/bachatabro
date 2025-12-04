@@ -144,16 +144,20 @@ export default function GameScreen() {
         lastFrameTimeRef.current = now;
       }
 
-      // Detect user pose (real-time or pre-computed based on mode)
+      // Detect user pose - always use camera for real user detection
+      // AUTO mode should also use camera when ExecuTorch is available
+      const shouldUseCamera = detectionMode === DetectionMode.REAL_TIME || 
+                              detectionMode === DetectionMode.AUTO;
+      
       const userPose = await poseServiceRef.current.detectPose({
-        type: detectionMode === DetectionMode.REAL_TIME ? 'camera' : 'precomputed',
+        type: shouldUseCamera ? 'camera' : 'precomputed',
         imageData: base64Image,
         frameIndex,
         songId,
       });
 
-      // Update latency for real-time mode
-      if (detectionMode === DetectionMode.REAL_TIME) {
+      // Update latency for real-time/auto mode
+      if (shouldUseCamera) {
         const metrics = poseServiceRef.current.getPerformanceMetrics();
         if (metrics) {
           setLatency(metrics.averageLatency);

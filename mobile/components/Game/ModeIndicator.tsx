@@ -54,7 +54,8 @@ export function ModeIndicator({ mode, fps, latency }: ModeIndicatorProps) {
         <Text className="text-white text-xs font-bold">{label}</Text>
       </View>
       
-      {mode === DetectionMode.REAL_TIME && (fps !== undefined || latency !== undefined) && (
+      {(mode === DetectionMode.REAL_TIME || mode === DetectionMode.AUTO) && 
+       (fps !== undefined || latency !== undefined) && (
         <View className="bg-black/70 px-2 py-1 rounded mt-1">
           {fps !== undefined && (
             <Text className="text-white text-xs">

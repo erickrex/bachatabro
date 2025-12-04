@@ -12,14 +12,10 @@ export interface FrameScore {
 }
 
 export interface ScoreBreakdown {
-  leftArm: number;
-  rightArm: number;
   leftElbow: number;
   rightElbow: number;
   leftThigh: number;
   rightThigh: number;
-  leftLeg: number;
-  rightLeg: number;
 }
 
 /**
@@ -38,30 +34,39 @@ export function calculateFrameScore(
   let matchCount = 0;
   let totalJoints = 0;
   
-  // Compare each joint angle
+  // Compare only unique joint angles (avoid duplicates like leftLeg=leftThigh)
+  // Primary joints: arms (elbow angles) and legs (thigh angles)
   const joints: (keyof Angles)[] = [
-    'leftArm',
-    'rightArm',
     'leftElbow',
     'rightElbow',
     'leftThigh',
     'rightThigh',
-    'leftLeg',
-    'rightLeg',
   ];
   
   for (const joint of joints) {
     const userAngle = userAngles[joint];
     const refAngle = referenceAngles[joint];
     
-    // Skip if either angle is missing or zero
-    if (
-      userAngle === undefined ||
-      refAngle === undefined ||
-      userAngle === 0 ||
-      refAngle === 0
-    ) {
+    // Skip if either angle is missing
+    if (userAngle === undefined || refAngle === undefined) {
       matches[joint] = false;
+      continue;
+    }
+    
+    // If reference angle is 0 (low confidence in pre-computed data),
+    // give the user benefit of the doubt - count as match
+    if (refAngle === 0) {
+      matches[joint] = true;
+      totalJoints++;
+      matchCount++;
+      continue;
+    }
+    
+    // If user angle is 0 (low confidence detection), count as no match
+    // but still include in total to avoid inflated scores
+    if (userAngle === 0) {
+      matches[joint] = false;
+      totalJoints++;
       continue;
     }
     
@@ -78,6 +83,7 @@ export function calculateFrameScore(
   }
   
   // Calculate score as percentage
+  // If no joints could be compared, return 0 instead of undefined behavior
   const score = totalJoints > 0 ? (matchCount / totalJoints) * 100 : 0;
   
   return { score, matches };
@@ -104,27 +110,19 @@ export function calculateScoreBreakdown(
   frameScores: Array<{ matches: Record<string, boolean> }>
 ): ScoreBreakdown {
   const breakdown: ScoreBreakdown = {
-    leftArm: 0,
-    rightArm: 0,
     leftElbow: 0,
     rightElbow: 0,
     leftThigh: 0,
     rightThigh: 0,
-    leftLeg: 0,
-    rightLeg: 0,
   };
   
   if (frameScores.length === 0) return breakdown;
   
   const joints: (keyof ScoreBreakdown)[] = [
-    'leftArm',
-    'rightArm',
     'leftElbow',
     'rightElbow',
     'leftThigh',
     'rightThigh',
-    'leftLeg',
-    'rightLeg',
   ];
   
   // Count matches for each joint
