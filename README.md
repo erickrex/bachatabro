@@ -4,8 +4,6 @@
 
 A motion-based dance training game for Arm-powered mobile devices where players follow choreography and receive instant AI-powered feedback on their movements.
 
-> 🏆 **Arm AI Developer Challenge 2025 Submission**
-
 ---
 
 ## Features
@@ -326,7 +324,6 @@ ExecuTorch uses XNNPACK as the optimized backend for Arm devices:
 
 ## Documentation
 
-- [HACKATHON.md](HACKATHON.md) - Arm AI Challenge submission details
 - [HOW_POSES_WORK.md](HOW_POSES_WORK.md) - Technical deep-dive on pose detection
 - [ADDING_BACHATA_SONGS.md](ADDING_BACHATA_SONGS.md) - Guide for adding new songs
 - [python-tools/README.md](python-tools/README.md) - Preprocessing pipeline docs
@@ -358,18 +355,3 @@ ExecuTorch uses XNNPACK as the optimized backend for Arm devices:
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
-
----
-
-## Acknowledgments
-
-- **PyTorch Team** - ExecuTorch framework
-- **Arm** - AI Developer Challenge 2025
-- **Ultralytics** - YOLOv8 pose estimation
-- **Prince Royce** - Bachata music inspiration
-
----
-
-<p align="center">
-  <b>Built with ❤️ for the Arm AI Developer Challenge 2025</b>
-</p>
