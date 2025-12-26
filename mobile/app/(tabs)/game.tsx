@@ -4,20 +4,26 @@
  * 
  * Task 3.2.2: Update Game Screen for Real-Time Mode
  * Acceptance Criteria: AC-001, AC-002, AC-003, AC-031 to AC-036
+ * 
+ * Task 17: Integrate Voice Coach with Game Screen
+ * Requirements: 5.1, 5.2, 5.5, 8.1, 11.6
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, Alert, ActivityIndicator, Text } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { DualVideoView } from '@/components/Game/DualVideoView';
 import { ScoreDisplay } from '@/components/Game/ScoreDisplay';
 import { ModeIndicator } from '@/components/Game/ModeIndicator';
+import { VoiceIndicator, VoiceButton } from '@/components/VoiceCoach';
 import { useGameStore } from '@/store/gameStore';
+import { useVoiceCoach } from '@/hooks/useVoiceCoach';
 import { loadPoseData, loadVideo } from '@/services/assetLoader';
 import { calculateFrameScore } from '@/services/scoreCalculator';
 import { UnifiedPoseDetectionService } from '@/services/poseDetection';
 import { PoseData, Song } from '@/types/game';
 import { DetectionMode } from '@/types/detection';
+import { PoseAnalysis } from '@/types/voiceCoach';
 import { SONGS } from '@/components/Song';
 
 export default function GameScreen() {
@@ -36,6 +42,9 @@ export default function GameScreen() {
     frameScores,
   } = useGameStore();
 
+  // Voice coach hook
+  const [voiceCoachState, voiceCoachActions] = useVoiceCoach();
+
   // Local state
   const [poseData, setPoseData] = useState<PoseData | null>(null);
   const [videoUri, setVideoUri] = useState<string | null>(null);
@@ -45,6 +54,10 @@ export default function GameScreen() {
   const [detectionMode, setDetectionMode] = useState<DetectionMode>(DetectionMode.AUTO);
   const [fps, setFps] = useState<number>(0);
   const [latency, setLatency] = useState<number>(0);
+
+  // Track weak and strong points for voice coaching
+  const [weakPoints, setWeakPoints] = useState<string[]>([]);
+  const [strongPoints, setStrongPoints] = useState<string[]>([]);
 
   // Pose detection service
   const poseServiceRef = useRef<UnifiedPoseDetectionService | null>(null);
@@ -186,6 +199,39 @@ export default function GameScreen() {
       });
 
       setCurrentScore(score);
+
+      // Analyze matches to determine weak and strong points for voice coaching
+      // Requirements: 5.1, 5.2, 5.5
+      const newWeakPoints: string[] = [];
+      const newStrongPoints: string[] = [];
+      
+      if (matches) {
+        Object.entries(matches).forEach(([bodyPart, isMatched]) => {
+          if (isMatched) {
+            newStrongPoints.push(bodyPart);
+          } else {
+            newWeakPoints.push(bodyPart);
+          }
+        });
+      }
+
+      setWeakPoints(newWeakPoints);
+      setStrongPoints(newStrongPoints);
+
+      // Call voice coach for real-time feedback
+      // Requirements: 5.1, 5.2 - Score-based feedback triggering
+      // Requirement: 5.5 - Voice feedback during pose detection
+      if (voiceCoachState.isEnabled && voiceCoachState.isAvailable) {
+        const poseAnalysis: PoseAnalysis = {
+          score,
+          weakPoints: newWeakPoints,
+          strongPoints: newStrongPoints,
+          timestamp: now,
+        };
+        
+        // Call onPoseAnalysis - this handles cooldown and feedback generation internally
+        voiceCoachActions.onPoseAnalysis(poseAnalysis);
+      }
     } catch (error) {
       console.error('Frame processing failed:', error);
       // Continue with next frame - don't break the game
@@ -212,6 +258,32 @@ export default function GameScreen() {
   const handleError = (error: string) => {
     console.error('Video error:', error);
     Alert.alert('Error', 'Video playback error. Please try again.');
+  };
+
+  // Handle voice input button press
+  // Requirements: 8.1, 11.6 - Voice input trigger and command handling
+  const handleVoiceInput = useCallback(async () => {
+    if (voiceCoachState.isListening) {
+      voiceCoachActions.stopListening();
+      // Process the transcript as a voice command if available
+      if (voiceCoachState.currentTranscript) {
+        await voiceCoachActions.processVoiceCommand(voiceCoachState.currentTranscript);
+      }
+    } else {
+      await voiceCoachActions.startListening();
+    }
+  }, [voiceCoachState.isListening, voiceCoachState.currentTranscript, voiceCoachActions]);
+
+  // Handle mute toggle
+  const handleMuteToggle = useCallback(() => {
+    voiceCoachActions.setMuted(!voiceCoachState.isSpeaking);
+  }, [voiceCoachActions]);
+
+  // Determine voice indicator state
+  const getVoiceIndicatorState = (): 'idle' | 'listening' | 'speaking' => {
+    if (voiceCoachState.isSpeaking) return 'speaking';
+    if (voiceCoachState.isListening) return 'listening';
+    return 'idle';
   };
 
   // Loading state
@@ -256,6 +328,16 @@ export default function GameScreen() {
         latency={detectionMode === DetectionMode.REAL_TIME ? latency : undefined}
       />
 
+      {/* Voice Coach Indicator - Requirements: 11.1, 11.2 */}
+      {voiceCoachState.isEnabled && (
+        <View style={styles.voiceIndicatorContainer}>
+          <VoiceIndicator
+            state={getVoiceIndicatorState()}
+            transcript={voiceCoachState.spokenText || voiceCoachState.currentTranscript}
+          />
+        </View>
+      )}
+
       {/* Score Display */}
       {isPlaying && (
         <ScoreDisplay
@@ -263,6 +345,18 @@ export default function GameScreen() {
           averageScore={averageScore}
           progress={progress}
         />
+      )}
+
+      {/* Voice Input Button - Requirements: 8.1, 11.6 */}
+      {voiceCoachState.isEnabled && isPlaying && (
+        <View style={styles.voiceButtonContainer}>
+          <VoiceButton
+            type="voice-input"
+            isListening={voiceCoachState.isListening}
+            onPress={handleVoiceInput}
+            disabled={!voiceCoachState.isAvailable}
+          />
+        </View>
       )}
     </View>
   );
@@ -283,5 +377,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#9ca3af',
+  },
+  voiceIndicatorContainer: {
+    position: 'absolute',
+    top: 100,
+    left: 16,
+    right: 16,
+    alignItems: 'flex-start',
+    zIndex: 10,
+  },
+  voiceButtonContainer: {
+    position: 'absolute',
+    bottom: 120,
+    right: 16,
+    zIndex: 10,
   },
 });

@@ -1,29 +1,47 @@
 /**
  * Results Screen
  * Displays final score and provides navigation options
+ * Integrates voice coach performance review
  * 
  * Acceptance Criteria: AC-037 to AC-041
+ * Requirements: 6.1, 6.6, 12.2
  */
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Share } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn, SlideInUp, FadeInDown } from 'react-native-reanimated';
 import { useGameStore } from '@/store/gameStore';
-import { saveScore, initDatabase } from '@/services/database';
+import { saveScore, initDatabase, getBestScore } from '@/services/database';
+import { PerformanceReviewer, GameSession } from '@/services/voiceCoach';
 
 export default function ResultsScreen() {
   const router = useRouter();
   const { finalScore, currentSong, reset, frameScores } = useGameStore();
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [previousBest, setPreviousBest] = useState<number | null>(null);
+  const [reviewEnabled, setReviewEnabled] = useState(true);
+  const [isReviewing, setIsReviewing] = useState(false);
+  const [reviewTranscript, setReviewTranscript] = useState('');
+  const [performanceReviewer] = useState(() => new PerformanceReviewer({
+    enabled: true,
+    language: 'en',
+    voiceId: 'Rachel',
+  }));
 
-  // Save score to database
+  // Save score to database and get previous best
   useEffect(() => {
     const saveFinalScore = async () => {
       if (finalScore !== null && currentSong && !scoreSaved) {
         try {
           // Initialize database first
           await initDatabase();
+          
+          // Get previous best score before saving new one
+          const bestScore = await getBestScore(currentSong.id, 'Player');
+          setPreviousBest(bestScore?.score ?? null);
+          
+          // Save new score
           await saveScore(currentSong.id, finalScore, 'Player');
           setScoreSaved(true);
           console.log('Score saved:', finalScore);
@@ -35,6 +53,47 @@ export default function ResultsScreen() {
 
     saveFinalScore();
   }, [finalScore, currentSong, scoreSaved]);
+
+  // Generate performance review when enabled
+  useEffect(() => {
+    const generateReview = async () => {
+      if (reviewEnabled && currentSong && finalScore !== null && frameScores.length > 0 && !isReviewing) {
+        setIsReviewing(true);
+        
+        try {
+          const session: GameSession = {
+            song: currentSong,
+            finalScore,
+            previousBest,
+            frameScores,
+          };
+
+          // Setup audio playback listener to display transcript
+          performanceReviewer['audioManager'].onPlaybackStart = (clip) => {
+            setReviewTranscript(clip.text);
+          };
+
+          performanceReviewer['audioManager'].onPlaybackEnd = () => {
+            setReviewTranscript('');
+          };
+
+          const review = await performanceReviewer.reviewSession(session);
+          
+          if (review.review) {
+            console.log('[Results] Performance review generated:', review.review);
+          }
+        } catch (error) {
+          console.error('[Results] Failed to generate review:', error);
+        } finally {
+          setIsReviewing(false);
+        }
+      }
+    };
+
+    // Small delay to let the screen render first
+    const timer = setTimeout(generateReview, 500);
+    return () => clearTimeout(timer);
+  }, [reviewEnabled, currentSong, finalScore, frameScores, previousBest, isReviewing, performanceReviewer]);
 
   // Calculate score breakdown
   const getScoreBreakdown = () => {
@@ -84,7 +143,7 @@ export default function ResultsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
       {/* Final Score */}
       <Animated.View entering={FadeIn.duration(800)} style={styles.scoreContainer}>
         <Text style={styles.scoreLabel}>Final Score</Text>
@@ -103,6 +162,32 @@ export default function ResultsScreen() {
           <Text style={styles.songArtist}>{currentSong.artist}</Text>
         </Animated.View>
       )}
+
+      {/* Voice Coach Review Section */}
+      <Animated.View entering={FadeInDown.delay(400)} style={styles.reviewSection}>
+        <View style={styles.reviewHeader}>
+          <Text style={styles.reviewTitle}>Voice Coach Review</Text>
+          <Switch
+            value={reviewEnabled}
+            onValueChange={setReviewEnabled}
+            trackColor={{ false: '#4b5563', true: '#9333ea' }}
+            thumbColor={reviewEnabled ? '#fff' : '#9ca3af'}
+          />
+        </View>
+        
+        {reviewTranscript && (
+          <View style={styles.transcriptContainer}>
+            <Text style={styles.transcriptLabel}>Coach is speaking:</Text>
+            <Text style={styles.transcriptText}>{reviewTranscript}</Text>
+          </View>
+        )}
+        
+        {!reviewEnabled && (
+          <Text style={styles.reviewDisabledText}>
+            Enable to hear AI coach feedback
+          </Text>
+        )}
+      </Animated.View>
 
       {/* Score Breakdown */}
       {breakdown && (
@@ -155,17 +240,21 @@ export default function ResultsScreen() {
           </Text>
         </TouchableOpacity>
       </Animated.View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
     backgroundColor: '#111827', // gray-900
+  },
+  container: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    paddingBottom: 40,
   },
   scoreContainer: {
     alignItems: 'center',
@@ -202,6 +291,47 @@ const styles = StyleSheet.create({
   songArtist: {
     fontSize: 16,
     color: '#9ca3af', // gray-400
+  },
+  reviewSection: {
+    width: '100%',
+    backgroundColor: '#1f2937', // gray-800
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  reviewTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  transcriptContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#374151', // gray-700
+    borderRadius: 8,
+  },
+  transcriptLabel: {
+    fontSize: 12,
+    color: '#9ca3af', // gray-400
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  transcriptText: {
+    fontSize: 14,
+    color: '#fff',
+    lineHeight: 20,
+  },
+  reviewDisabledText: {
+    fontSize: 14,
+    color: '#6b7280', // gray-500
+    fontStyle: 'italic',
   },
   breakdown: {
     width: '100%',

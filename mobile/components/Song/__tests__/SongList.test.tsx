@@ -37,15 +37,16 @@ describe('SongList', () => {
 
   describe('Song Display (AC-027)', () => {
     it('should display all available songs', async () => {
-      const { getByText } = render(
+      const { getByText, getAllByText } = render(
         <SongList onSelectSong={mockOnSelectSong} />
       );
 
       await waitFor(() => {
         SONGS.forEach(song => {
           expect(getByText(song.title)).toBeTruthy();
-          expect(getByText(song.artist)).toBeTruthy();
         });
+        // Both songs have the same artist, so we check for multiple elements
+        expect(getAllByText('Prince Royce').length).toBe(SONGS.length);
       });
     });
 
@@ -55,8 +56,8 @@ describe('SongList', () => {
       );
 
       await waitFor(async () => {
-        // Should have 5 songs
-        expect(SONGS.length).toBe(5);
+        // Should have 2 songs
+        expect(SONGS.length).toBe(2);
       });
     });
   });
@@ -68,11 +69,11 @@ describe('SongList', () => {
       );
 
       await waitFor(() => {
-        const songCard = getByText('Cheap Thrills');
+        const songCard = getByText('How Deep Is Your Love');
         fireEvent.press(songCard.parent!.parent!);
       });
 
-      expect(mockOnSelectSong).toHaveBeenCalledWith('cheapthrills');
+      expect(mockOnSelectSong).toHaveBeenCalledWith('howdeepisyourlove');
     });
 
     it('should pass correct song ID on selection', async () => {
@@ -81,11 +82,11 @@ describe('SongList', () => {
       );
 
       await waitFor(() => {
-        const songCard = getByText('Uptown Funk');
+        const songCard = getByText('30 Minutos');
         fireEvent.press(songCard.parent!.parent!);
       });
 
-      expect(mockOnSelectSong).toHaveBeenCalledWith('uptownfunk');
+      expect(mockOnSelectSong).toHaveBeenCalledWith('30minutos');
     });
   });
 
