@@ -1,10 +1,9 @@
 # Git attributes for Bachata Bro
-
 # Videos and audio are tracked in regular git (89MB total)
 # Not using LFS to keep setup simple
 # Mark binary files
-*.mp4 binary
-*.mp3 binary
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mp3 filter=lfs diff=lfs merge=lfs -text
 *.pt binary
 *.pte binary
 *.tflite binary
@@ -22,5 +21,3 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 # Make shell scripts executable
-*.mp4 filter=lfs diff=lfs merge=lfs -text
-*.mp3 filter=lfs diff=lfs merge=lfs -text
