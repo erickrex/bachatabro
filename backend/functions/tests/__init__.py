@@ -1,1 +1,1 @@
-"""Test suite for Bacha Trainer backend functions."""
+"""Test suite for Bachata Bro backend functions."""

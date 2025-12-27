@@ -27,7 +27,7 @@ export default function HomeScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Bacha Trainer</Text>
+        <Text style={styles.title}>Bachata Bro</Text>
         <Text style={styles.subtitle}>Choose your song</Text>
       </View>
 

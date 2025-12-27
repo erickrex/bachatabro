@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YOLOv8s-Pose Model Wrapper for Bacha Trainer
+YOLOv8s-Pose Model Wrapper for Bachata Bro
 
 This module provides a unified interface for YOLOv8s-pose that:
 1. Works for both preprocessing (Python) and mobile (ExecuTorch)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Video processing tools for Bacha Trainer
+Video processing tools for Bachata Bro
 - Convert to 720p
 - Cut/trim video segments
 - Convert MKV to MP4

@@ -1,7 +1,7 @@
 /**
  * Conversational AI Agent Service
  *
- * Provides conversational AI capabilities for the Bacha Trainer app.
+ * Provides conversational AI capabilities for the Bachata Bro app.
  * Implements conversation context management, idle timeout, and off-topic redirection.
  *
  * Requirements: 7.1, 7.3, 7.5, 7.6

@@ -1,6 +1,6 @@
 # Videos
 
-Reference dance videos for Bacha Trainer.
+Reference dance videos for Bachata Bro.
 
 ## Current Videos
 

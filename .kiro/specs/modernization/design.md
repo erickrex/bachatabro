@@ -1,8 +1,8 @@
-# Bacha Trainer Modernization - Design Document
+# Bachata Bro Modernization - Design Document
 
 ## 1. Architecture Overview
 
-This document describes the system architecture for the modernized Bacha Trainer application using React Native with Expo for the frontend and Python 3.12.6 with FastAPI for the backend, optimized for ARM architectures.
+This document describes the system architecture for the modernized Bachata Bro application using React Native with Expo for the frontend and Python 3.12.6 with FastAPI for the backend, optimized for ARM architectures.
 
 ### 1.1 High-Level Architecture
 

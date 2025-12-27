@@ -1,7 +1,7 @@
 [project]
-name = "bachatrainer-tools"
+name = "bachatabro-tools"
 version = "3.0.0"
-description = "Development tools for Bacha Trainer - Video preprocessing and pose extraction using YOLOv8s-pose"
+description = "Development tools for Bachata Bro - Video preprocessing and pose extraction using YOLOv8s-pose"
 requires-python = ">=3.10"
 dependencies = [
     "opencv-python>=4.10.0",

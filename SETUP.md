@@ -1,4 +1,4 @@
-# Bacha Trainer - Setup Guide
+# Bachata Bro - Setup Guide
 
 Complete setup guide for new developers.
 
@@ -25,8 +25,8 @@ Complete setup guide for new developers.
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/erickrex/bachatrainer.git
-cd bachatrainer
+git clone https://github.com/erickrex/bachatabro.git
+cd bachatabro
 ```
 
 ### 2. Generate AI Models
@@ -83,7 +83,7 @@ npm run ios      # For iOS device (Mac only)
 After setup, your directory structure:
 
 ```
-bachatrainer/
+bachatabro/
 ├── python-tools/
 │   └── models/
 │       ├── lightweight_pose.pt (87MB)
@@ -149,7 +149,7 @@ source ~/.bashrc
 ### 4. Run Setup from WSL Terminal
 **Important**: Open a WSL terminal (not PowerShell), then:
 ```bash
-cd /home/rexbox/RRR/bachatrainer  # Adjust to your path
+cd /home/rexbox/RRR/bachatabro  # Adjust to your path
 cd python-tools
 ./setup_models.sh
 

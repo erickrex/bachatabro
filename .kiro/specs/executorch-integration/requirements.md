@@ -2,7 +2,7 @@ weqds # ExecuTorch Integration - Requirements Document
 
 ## Introduction
 
-This document specifies the requirements for integrating PyTorch ExecuTorch into the Bacha Trainer mobile application to enable real-time pose detection on-device, replacing the current pre-computed pose data approach and reducing dependencies in the Python preprocessing tools.
+This document specifies the requirements for integrating PyTorch ExecuTorch into the Bachata Bro mobile application to enable real-time pose detection on-device, replacing the current pre-computed pose data approach and reducing dependencies in the Python preprocessing tools.
 
 ### Project Goals
 

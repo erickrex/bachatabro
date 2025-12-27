@@ -2,7 +2,7 @@
 
 ## 1. Architecture Overview
 
-This document describes the system architecture for integrating PyTorch ExecuTorch into the Bacha Trainer mobile application, enabling real-time pose detection on-device while maintaining backward compatibility with pre-computed pose data.
+This document describes the system architecture for integrating PyTorch ExecuTorch into the Bachata Bro mobile application, enabling real-time pose detection on-device while maintaining backward compatibility with pre-computed pose data.
 
 ### 1.1 High-Level Architecture
 
@@ -400,10 +400,10 @@ RCT_EXPORT_METHOD(runInference:(NSDictionary *)imageData
 
 #### 2.4.2 Android Native Module (Kotlin)
 
-**File**: `android/src/main/java/com/bachatrainer/ExecuTorchModule.kt`
+**File**: `android/src/main/java/com/bachatabro/ExecuTorchModule.kt`
 
 ```kotlin
-package com.bachatrainer
+package com.bachatabro
 
 import com.facebook.react.bridge.*
 import org.pytorch.executorch.Module

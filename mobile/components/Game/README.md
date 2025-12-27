@@ -1,6 +1,6 @@
 # Game Components
 
-UI components for the Bacha Trainer game screen.
+UI components for the Bachata Bro game screen.
 
 ## DualVideoView
 

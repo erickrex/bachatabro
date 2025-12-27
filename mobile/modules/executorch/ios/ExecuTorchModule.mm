@@ -1,6 +1,6 @@
 //
 //  ExecuTorchModule.mm
-//  Bacha Trainer
+//  Bachata Bro
 //
 //  React Native bridge for PyTorch ExecuTorch
 //

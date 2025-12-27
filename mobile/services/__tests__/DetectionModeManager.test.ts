@@ -88,7 +88,7 @@ describe('DetectionModeManager', () => {
 
       expect(manager.getCurrentMode()).toBe(DetectionMode.REAL_TIME);
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        '@bacha_trainer:detection_mode',
+        '@bachatabro:detection_mode',
         DetectionMode.REAL_TIME
       );
     });

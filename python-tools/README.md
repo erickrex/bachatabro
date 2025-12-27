@@ -1,6 +1,6 @@
 # Python Tools
 
-ML preprocessing tools for Bacha Trainer.
+ML preprocessing tools for Bachata Bro.
 
 ## Quick Start
 

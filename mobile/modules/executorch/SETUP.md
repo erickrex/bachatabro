@@ -67,7 +67,7 @@ python3 build/build_apple_frameworks.py \
   --output-dir build-ios
 
 # Copy to project
-cp -r build-ios/ExecuTorch.framework ../bachatrainer/mobile/ios/Frameworks/
+cp -r build-ios/ExecuTorch.framework ../bachatabro/mobile/ios/Frameworks/
 ```
 
 #### Android
@@ -86,7 +86,7 @@ cd executorch
 
 # Copy to project
 cp build-android/executorch-android.aar \
-  ../bachatrainer/mobile/modules/executorch/android/libs/
+  ../bachatabro/mobile/modules/executorch/android/libs/
 ```
 
 ## Step 2: Configure Expo App
@@ -121,7 +121,7 @@ cp build-android/executorch-android.aar \
 
 2. Open Xcode project:
    ```bash
-   open ios/bachatrainer.xcworkspace
+   open ios/bachatabro.xcworkspace
    ```
 
 3. Verify ExecuTorch framework:

@@ -1,5 +1,5 @@
 """
-Bacha Trainer Backend - Voice Coach Proxy
+Bachata Bro Backend - Voice Coach Proxy
 
 This package provides secure API proxy endpoints for:
 - ElevenLabs Text-to-Speech and Speech-to-Text

@@ -87,7 +87,7 @@ export function CameraView({
       <View style={styles.container}>
         <Text style={styles.message}>Camera permission denied</Text>
         <Text style={styles.subMessage}>
-          Please enable camera access in your device settings to play Bacha Trainer.
+          Please enable camera access in your device settings to play Bachata Bro.
         </Text>
       </View>
     );

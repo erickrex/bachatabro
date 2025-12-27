@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a detailed breakdown of implementation tasks for integrating PyTorch ExecuTorch into the Bacha Trainer mobile application, enabling real-time pose detection and replacing TensorFlow Lite dependencies.
+This document provides a detailed breakdown of implementation tasks for integrating PyTorch ExecuTorch into the Bachata Bro mobile application, enabling real-time pose detection and replacing TensorFlow Lite dependencies.
 
 **Timeline**: 2-3 weeks
 **Team Size**: 1-2 developers

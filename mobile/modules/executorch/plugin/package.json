@@ -1,5 +1,5 @@
 {
-  "name": "@bachatrainer/executorch-plugin",
+  "name": "@bachatabro/executorch-plugin",
   "version": "1.0.0",
   "description": "Expo config plugin for ExecuTorch",
   "main": "src/index.ts",
@@ -9,7 +9,7 @@
     "config-plugin",
     "executorch"
   ],
-  "author": "Bacha Trainer Team",
+  "author": "Bachata Bro Team",
   "license": "MIT",
   "peerDependencies": {
     "@expo/config-plugins": "^7.0.0"

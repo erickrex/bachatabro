@@ -21,7 +21,7 @@ implementation 'com.facebook.soloader:soloader:0.11.0'
 
 Created `python-tools/export_executorch.py`:
 ```bash
-cd bachatrainer/python-tools
+cd bachatabro/python-tools
 uv run python export_executorch.py --output ../mobile/assets/models/pose.pte
 ```
 
@@ -65,7 +65,7 @@ Updated with ExecuTorch 1.0 GA API:
 ## Task 6: Build and Test
 
 ```bash
-cd bachatrainer/mobile
+cd bachatabro/mobile
 npx expo prebuild --clean
 eas build --profile development --platform android
 # Install on device and test
@@ -79,14 +79,14 @@ eas build --profile development --platform android
 
 1. **Export the model**:
    ```bash
-   cd bachatrainer/python-tools
+   cd bachatabro/python-tools
    pip install executorch torch torchvision
    python export_executorch.py --output ../mobile/assets/models/pose.pte
    ```
 
 2. **Rebuild the app**:
    ```bash
-   cd bachatrainer/mobile
+   cd bachatabro/mobile
    npx expo prebuild --clean
    eas build --profile development --platform android
    ```

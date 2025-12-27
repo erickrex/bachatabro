@@ -1,5 +1,5 @@
 """
-FastAPI application entry point for Bacha Trainer backend proxy.
+FastAPI application entry point for Bachata Bro backend proxy.
 
 Combines ElevenLabs and Gemini routers into a single FastAPI application.
 """
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="Bacha Trainer Voice Coach API",
+    title="Bachata Bro Voice Coach API",
     description="Backend proxy for ElevenLabs TTS/STT and Google Gemini coaching",
     version="1.0.0",
 )
@@ -47,7 +47,7 @@ app.include_router(gemini_router)
 async def root():
     """Root endpoint with API info."""
     return {
-        "name": "Bacha Trainer Voice Coach API",
+        "name": "Bachata Bro Voice Coach API",
         "version": "1.0.0",
         "endpoints": {
             "elevenlabs": "/elevenlabs",
@@ -59,7 +59,7 @@ async def root():
 @app.get("/health")
 async def health():
     """Global health check endpoint."""
-    return {"status": "healthy", "service": "bacha-trainer-backend"}
+    return {"status": "healthy", "service": "bachatabro-backend"}
 
 
 # AWS Lambda / Google Cloud Functions handler

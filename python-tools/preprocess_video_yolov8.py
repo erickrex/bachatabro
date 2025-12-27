@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Video Preprocessing Tool for Bacha Trainer (YOLOv8s-pose Version)
+Video Preprocessing Tool for Bachata Bro (YOLOv8s-pose Version)
 
 Extracts pose data from reference videos using YOLOv8s-pose and saves as JSON files.
 This replaces the older MobileNetV3-based model with YOLOv8s-pose for improved accuracy.

@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { DetectionMode, DeviceCapabilities } from '@/types/detection';
 
-const DETECTION_MODE_KEY = '@bacha_trainer:detection_mode';
+const DETECTION_MODE_KEY = '@bachatabro:detection_mode';
 const MAX_FAILURES = 10;
 const FAILURE_WINDOW_MS = 60000; // 1 minute
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Video Preprocessing Tool for Bacha Trainer
+Video Preprocessing Tool for Bachata Bro
 Extracts pose data from reference videos and saves as JSON files.
 """
 

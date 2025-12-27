@@ -20,7 +20,7 @@ let db: SQLite.SQLiteDatabase | null = null;
  */
 export async function initDatabase(): Promise<void> {
   try {
-    db = await SQLite.openDatabaseAsync('bachatrainer.db');
+    db = await SQLite.openDatabaseAsync('bachatabro.db');
     
     // Create scores table
     await db.execAsync(`

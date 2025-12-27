@@ -135,7 +135,7 @@ export default function ResultsScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `I just scored ${finalScore?.toFixed(0)}% on ${currentSong?.title} in Bacha Trainer! 🎵💃`,
+        message: `I just scored ${finalScore?.toFixed(0)}% on ${currentSong?.title} in Bachata Bro! 🎵💃`,
       });
     } catch (error) {
       console.error('Failed to share:', error);

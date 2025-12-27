@@ -1,7 +1,7 @@
 [project]
-name = "bacha-trainer-backend"
+name = "bachatabro-backend"
 version = "1.0.0"
-description = "Backend proxy for Bacha Trainer voice coaching with ElevenLabs and Google Gemini"
+description = "Backend proxy for Bachata Bro voice coaching with ElevenLabs and Google Gemini"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",

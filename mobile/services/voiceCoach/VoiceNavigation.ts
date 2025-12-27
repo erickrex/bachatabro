@@ -1,7 +1,7 @@
 /**
  * Voice Navigation Service
  *
- * Provides voice-controlled navigation for the Bacha Trainer app.
+ * Provides voice-controlled navigation for the Bachata Bro app.
  * Implements command parsing, execution, and clarification for unrecognized commands.
  *
  * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6

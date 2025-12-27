@@ -1,6 +1,6 @@
-# Bacha Trainer Backend - Voice Coach Proxy
+# Bachata Bro Backend - Voice Coach Proxy
 
-Backend proxy for Bacha Trainer voice coaching, providing secure API access to ElevenLabs and Google Gemini.
+Backend proxy for Bachata Bro voice coaching, providing secure API access to ElevenLabs and Google Gemini.
 
 ## Prerequisites
 
@@ -188,7 +188,7 @@ Gemini service health check.
 
 ```bash
 # Build and deploy
-gcloud run deploy bacha-trainer-backend \
+gcloud run deploy bachatabro-backend \
   --source . \
   --platform managed \
   --region us-central1 \

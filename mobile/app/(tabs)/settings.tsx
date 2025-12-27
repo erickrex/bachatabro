@@ -149,7 +149,7 @@ export default function SettingsScreen() {
         <View className="bg-gray-800 p-4 rounded-lg">
           <Text className="text-white font-bold text-lg mb-2">About</Text>
           <Text className="text-gray-400 text-sm mb-2">
-            Bacha Trainer v1.0.0
+            Bachata Bro v1.0.0
           </Text>
           <Text className="text-gray-400 text-sm">
             Powered by ExecuTorch for real-time pose detection

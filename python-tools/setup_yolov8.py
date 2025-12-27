@@ -135,7 +135,7 @@ def copy_to_mobile():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Setup YOLOv8s-pose model for Bacha Trainer"
+        description="Setup YOLOv8s-pose model for Bachata Bro"
     )
     parser.add_argument(
         "--export-executorch",
@@ -151,7 +151,7 @@ def main():
     args = parser.parse_args()
     
     print("=" * 60)
-    print("YOLOv8s-pose Setup for Bacha Trainer")
+    print("YOLOv8s-pose Setup for Bachata Bro")
     print("=" * 60)
     
     # Check dependencies

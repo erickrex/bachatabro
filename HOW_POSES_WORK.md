@@ -1,4 +1,4 @@
-# How Pose Data Works in Bacha Trainer
+# How Pose Data Works in Bachata Bro
 
 ## The Complete Flow
 

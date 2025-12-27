@@ -12,7 +12,7 @@
 
 ## Task 3: Install Dependencies
 ```bash
-cd bachatrainer/mobile
+cd bachatabro/mobile
 npx expo install @tensorflow/tfjs @tensorflow/tfjs-react-native expo-gl
 npm install @tensorflow-models/pose-detection
 ```

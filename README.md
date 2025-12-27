@@ -1,4 +1,4 @@
-# Bacha Trainer
+# Bachata Bro
 
 **AI-powered bachata dance instructor with real-time pose detection using PyTorch ExecuTorch**
 
@@ -132,7 +132,7 @@ sequenceDiagram
 ```bash
 # 1. Clone repository
 git clone <repository-url>
-cd bachatrainer
+cd bachatabro
 
 # 2. Setup Python tools and generate models
 cd python-tools
@@ -162,7 +162,7 @@ eas build --profile production --platform android
 ## Project Structure
 
 ```
-bachatrainer/
+bachatabro/
 ├── mobile/                      # React Native Expo app
 │   ├── app/                     # Screens (Expo Router)
 │   │   ├── (tabs)/              # Tab navigation

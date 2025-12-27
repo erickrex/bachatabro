@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Bacha Trainer",
-    "slug": "bachatrainer",
+    "name": "Bachata Bro",
+    "slug": "bachatabro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "bachatrainer",
+    "scheme": "bachatabro",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.erickrhein.bachatrainer"
+      "bundleIdentifier": "com.erickrhein.bachatabro"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,7 +28,7 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.erickrhein.bachatrainer"
+      "package": "com.erickrhein.bachatabro"
     },
     "web": {
       "bundler": "metro",
@@ -40,7 +40,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Bacha Trainer to access your camera to track your dance moves."
+          "cameraPermission": "Allow Bachata Bro to access your camera to track your dance moves."
         }
       ]
     ],

@@ -116,7 +116,7 @@ project(':executorch').projectDir = new File(rootProject.projectDir, '../modules
         'main',
         'java',
         'com',
-        'bachatrainer',
+        'bachatabro',
         'MainApplication.java'
       );
 
@@ -124,11 +124,11 @@ project(':executorch').projectDir = new File(rootProject.projectDir, '../modules
         let mainAppContent = fs.readFileSync(mainApplicationPath, 'utf8');
 
         // Add import
-        if (!mainAppContent.includes('com.bachatrainer.executorch')) {
+        if (!mainAppContent.includes('com.bachatabro.executorch')) {
           mainAppContent = mainAppContent.replace(
             /import com\.facebook\.react\.ReactApplication;/,
             `import com.facebook.react.ReactApplication;
-import com.bachatrainer.executorch.ExecuTorchPackage;`
+import com.bachatabro.executorch.ExecuTorchPackage;`
           );
         }
 

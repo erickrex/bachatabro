@@ -1,8 +1,8 @@
-# Adding Bachata Choreographies to Bacha Trainer
+# Adding Bachata Choreographies to Bachata Bro
 
 ## Overview
 
-This guide explains how to add bachata dance videos to the Bacha Trainer app using YOLOv8s-pose for accurate pose detection.
+This guide explains how to add bachata dance videos to the Bachata Bro app using YOLOv8s-pose for accurate pose detection.
 
 ---
 
@@ -60,7 +60,7 @@ ffmpeg -i bachata_sensual.mp4 -vn -acodec libmp3lame -q:a 2 bachata_sensual.mp3
 ### 2. Process Video with AI
 
 ```bash
-cd ~/RRR/bachatrainer/python-tools
+cd ~/RRR/bachatabro/python-tools
 
 # Process single video
 uv run python preprocess_video_yolov8.py "bailando_bachata.mp4"

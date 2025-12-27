@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Batch Processing Script for Bacha Trainer Videos
+Batch Processing Script for Bachata Bro Videos
 Process all reference videos in the songs directory.
 """
 

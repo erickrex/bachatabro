@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Batch Processing Script for Bacha Trainer Videos (YOLOv8s-pose Version)
+Batch Processing Script for Bachata Bro Videos (YOLOv8s-pose Version)
 
 Process all reference videos in the songs directory using YOLOv8s-pose
 for improved pose estimation accuracy.
@@ -47,7 +47,7 @@ def batch_process_videos(
         return
     
     print("=" * 60)
-    print("Bacha Trainer - Batch Video Processing")
+    print("Bachata Bro - Batch Video Processing")
     print("Using YOLOv8s-pose (64.0 AP on COCO)")
     print("=" * 60)
     print(f"\nFound {len(video_files)} video(s) to process")

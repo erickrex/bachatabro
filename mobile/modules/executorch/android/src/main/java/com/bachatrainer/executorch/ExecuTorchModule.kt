@@ -1,4 +1,4 @@
-package com.bachatrainer.executorch
+package com.bachatabro.executorch
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

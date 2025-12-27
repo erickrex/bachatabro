@@ -1,5 +1,5 @@
 {
-  "name": "@bachatrainer/executorch",
+  "name": "@bachatabro/executorch",
   "version": "1.0.0",
   "description": "React Native bindings for PyTorch ExecuTorch pose detection",
   "main": "src/index.ts",
@@ -14,9 +14,9 @@
     "pose-detection",
     "machine-learning"
   ],
-  "author": "Bacha Trainer Team",
+  "author": "Bachata Bro Team",
   "license": "MIT",
-  "homepage": "https://github.com/bachatrainer/bachatrainer",
+  "homepage": "https://github.com/bachatabro/bachatabro",
   "peerDependencies": {
     "react": "*",
     "react-native": "*"

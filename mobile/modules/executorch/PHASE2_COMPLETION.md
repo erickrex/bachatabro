@@ -85,8 +85,8 @@ Phase 2 focused on creating native iOS and Android modules to bridge React Nativ
 - Performance tracking
 
 **Deliverables**:
-- `android/src/main/java/com/bachatrainer/executorch/ExecuTorchModule.kt`
-- `android/src/main/java/com/bachatrainer/executorch/ExecuTorchPackage.kt`
+- `android/src/main/java/com/bachatabro/executorch/ExecuTorchModule.kt`
+- `android/src/main/java/com/bachatabro/executorch/ExecuTorchPackage.kt`
 - Image preprocessing utilities
 - Mock keypoint generation
 
@@ -136,7 +136,7 @@ mobile/modules/executorch/
 │   ├── build.gradle              # Build configuration
 │   ├── src/main/
 │   │   ├── AndroidManifest.xml
-│   │   └── java/com/bachatrainer/executorch/
+│   │   └── java/com/bachatabro/executorch/
 │   │       ├── ExecuTorchModule.kt      # Implementation (350+ lines)
 │   │       └── ExecuTorchPackage.kt     # Package registration
 ├── src/                           # TypeScript interface
@@ -285,8 +285,8 @@ The module tracks:
 3. `ios/ExecuTorch.podspec` - CocoaPods spec
 4. `android/build.gradle` - Android build
 5. `android/src/main/AndroidManifest.xml` - Manifest
-6. `android/src/main/java/com/bachatrainer/executorch/ExecuTorchModule.kt` - Android implementation
-7. `android/src/main/java/com/bachatrainer/executorch/ExecuTorchPackage.kt` - Package
+6. `android/src/main/java/com/bachatabro/executorch/ExecuTorchModule.kt` - Android implementation
+7. `android/src/main/java/com/bachatabro/executorch/ExecuTorchPackage.kt` - Package
 8. `src/index.ts` - TypeScript wrapper
 
 ### Supporting Files (7 files)

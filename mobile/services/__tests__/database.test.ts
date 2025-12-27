@@ -44,7 +44,7 @@ describe('Database Service', () => {
     it('should initialize database successfully', async () => {
       await initDatabase();
 
-      expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('bachatrainer.db');
+      expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('bachatabro.db');
       expect(mockDb.execAsync).toHaveBeenCalled();
     });
 

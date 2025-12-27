@@ -22,7 +22,7 @@ def safeExtGet(prop, fallback) {
 android {
     compileSdkVersion safeExtGet('compileSdkVersion', 34)
     
-    namespace "com.bachatrainer.executorch"
+    namespace "com.bachatabro.executorch"
     
     defaultConfig {
         minSdkVersion safeExtGet('minSdkVersion', 21)

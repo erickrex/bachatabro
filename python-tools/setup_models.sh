@@ -1,9 +1,9 @@
 #!/bin/bash
-# Setup script to generate all required models for Bacha Trainer
+# Setup script to generate all required models for Bachata Bro
 
 set -e  # Exit on error
 
-echo "🤖 Bacha Trainer - Model Setup"
+echo "🤖 Bachata Bro - Model Setup"
 echo "================================"
 echo ""
 

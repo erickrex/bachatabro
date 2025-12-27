@@ -1,4 +1,4 @@
-package com.bachatrainer.executorch
+package com.bachatabro.executorch
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

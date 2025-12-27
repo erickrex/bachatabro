@@ -1,6 +1,6 @@
 # Audio
 
-Music files for Bacha Trainer.
+Music files for Bachata Bro.
 
 ## Current Songs
 

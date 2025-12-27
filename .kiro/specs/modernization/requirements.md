@@ -1,8 +1,8 @@
-# Bacha Trainer Modernization - Requirements Document
+# Bachata Bro Modernization - Requirements Document
 
 ## 1. Executive Summary
 
-This document specifies the requirements for modernizing the Bacha Trainer motion-based dance video game using React Native with Expo for the frontend and Python 3.12.6 with FastAPI for the backend, with specific optimizations for ARM architectures.
+This document specifies the requirements for modernizing the Bachata Bro motion-based dance video game using React Native with Expo for the frontend and Python 3.12.6 with FastAPI for the backend, with specific optimizations for ARM architectures.
 
 ### 1.1 Project Goals
 

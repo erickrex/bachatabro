@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Video Preprocessing Tool for Bacha Trainer (ExecuTorch Version)
+Video Preprocessing Tool for Bachata Bro (ExecuTorch Version)
 Extracts pose data from reference videos using ExecuTorch and saves as JSON files.
 
 This replaces the TensorFlow Lite version with ExecuTorch for a unified PyTorch workflow.

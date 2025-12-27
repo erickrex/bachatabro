@@ -1,8 +1,8 @@
-# Bacha Trainer Modernization - Implementation Tasks
+# Bachata Bro Modernization - Implementation Tasks
 
 ## Overview
 
-This document provides a detailed breakdown of implementation tasks for the Bacha Trainer modernization project using React Native + Expo + Python (ARM optimized).
+This document provides a detailed breakdown of implementation tasks for the Bachata Bro modernization project using React Native + Expo + Python (ARM optimized).
 
 **Timeline**: 5-6 weeks
 **Team Size**: 2-3 developers
@@ -121,8 +121,8 @@ docker --version
 **Subtasks**:
 - [x] Create project directory structure
   ```bash
-  mkdir -p bachatrainer/{backend,mobile}
-  cd bachatrainer/backend
+  mkdir -p bachatabro/{backend,mobile}
+  cd bachatabro/backend
   ```
 - [x] Create pyproject.toml with dependencies
 - [x] Initialize UV project
@@ -883,7 +883,7 @@ export function ScoreDisplay({ currentScore, averageScore, matches }) {
 // services/database.ts
 import * as SQLite from 'expo-sqlite';
 
-const db = SQLite.openDatabaseSync('bachatrainer.db');
+const db = SQLite.openDatabaseSync('bachatabro.db');
 
 export function initDatabase() {
   db.execSync(`
@@ -1004,7 +1004,7 @@ export default function HomeScreen() {
   return (
     <View className="flex-1 bg-gray-900">
       <View className="p-6 bg-purple-600">
-        <Text className="text-white text-3xl font-bold">Bacha Trainer</Text>
+        <Text className="text-white text-3xl font-bold">Bachata Bro</Text>
         <Text className="text-white/80">Choose your song</Text>
       </View>
       <SongList onSelectSong={handleSelectSong} />
@@ -1488,10 +1488,10 @@ export default function ResultsScreen() {
   ```json
   {
     "ios": {
-      "bundleIdentifier": "com.bachatrainer.app"
+      "bundleIdentifier": "com.bachatabro.app"
     },
     "android": {
-      "package": "com.bachatrainer.app"
+      "package": "com.bachatabro.app"
     }
   }
   ```
@@ -1641,7 +1641,7 @@ export default function ResultsScreen() {
 - [ ] Prepare press kit (optional)
 
 **App Store Metadata**:
-- [ ] App name: "Bacha Trainer"
+- [ ] App name: "Bachata Bro"
 - [ ] Subtitle/tagline: "Dance Game with Pose Detection"
 - [ ] Category: Games > Music
 - [ ] Age rating: 4+ (Everyone)
@@ -1679,10 +1679,10 @@ export default function ResultsScreen() {
 **iOS App Store Submission**:
 - [ ] Create App Store Connect account (if needed)
 - [ ] Create new app listing
-  - [ ] Bundle ID: com.bachatrainer.app
-  - [ ] App name: Bacha Trainer
+  - [ ] Bundle ID: com.bachatabro.app
+  - [ ] App name: Bachata Bro
   - [ ] Primary language: English
-  - [ ] SKU: bachatrainer-ios
+  - [ ] SKU: bachatabro-ios
 - [ ] Upload app build via EAS or Transporter
 - [ ] Fill in app information
   - [ ] Name, subtitle, description
@@ -1704,7 +1704,7 @@ export default function ResultsScreen() {
 **Google Play Store Submission**:
 - [ ] Create Google Play Console account (if needed)
 - [ ] Create new app
-  - [ ] App name: Bacha Trainer
+  - [ ] App name: Bachata Bro
   - [ ] Default language: English
   - [ ] App or game: Game
   - [ ] Free or paid: Free
@@ -1873,7 +1873,7 @@ export default function ResultsScreen() {
 - [ ] Monitor crash reports
 
 **Post-Launch Support**:
-- [ ] Set up support email (support@bachatrainer.app)
+- [ ] Set up support email (support@bachatabro.app)
 - [ ] Create FAQ based on user questions
 - [ ] Monitor app store reviews
 - [ ] Respond to user feedback

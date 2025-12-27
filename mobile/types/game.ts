@@ -1,5 +1,5 @@
 /**
- * Type definitions for the Bacha Trainer game
+ * Type definitions for the Bachata Bro game
  */
 
 export interface Keypoint {
