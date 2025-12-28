@@ -183,8 +183,10 @@ coverage/
 
 # Model directories
 models/
-mobile/assets/models/
 python-tools/models/
+!mobile/assets/models/
+!mobile/assets/models/pose.pte
+
 
 # Misc
 *.log

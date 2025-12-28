@@ -1,0 +1,55 @@
+# Dependencies (EAS installs these fresh from package.json)
+node_modules/
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests (not needed for production build)
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+jest.config.js
+jest.setup.js
+jest.polyfills.js
+coverage/
+
+# Development files
+.env.local
+*.log
+
+# Build artifacts
+dist/
+web-build/
+.expo/
+.cache/
+
+# Pose backups (not needed for build - 152MB savings)
+assets/poses_backups/
+
+# Lock files - KEEP package-lock.json for EAS (npm ci requires it)
+yarn.lock
+pnpm-lock.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ============================================
+# FORCE INCLUDE (override .gitignore):
+# ============================================
+!assets/models/
+!assets/models/*.pte

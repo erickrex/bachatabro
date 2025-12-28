@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Bachata Bro",
-    "slug": "bachatabro",
+    "slug": "bachatrainer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -53,6 +53,7 @@
       "eas": {
         "projectId": "da1502cb-079f-494d-8c0a-70fae92938c8"
       }
-    }
+    },
+    "owner": "erickrhein"
   }
 }
