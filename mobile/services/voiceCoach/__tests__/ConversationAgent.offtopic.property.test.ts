@@ -7,6 +7,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { ConversationAgent, ConversationAgentConfig } from '../ConversationAgent';
 import { GeminiClient } from '../GeminiClient';
 import { ElevenLabsClient } from '../ElevenLabsClient';
@@ -137,7 +138,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
           const isOffTopic = agent.isOffTopic(message);
           expect(isOffTopic).toBe(true);
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -149,7 +150,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
           const isOffTopic = agent.isOffTopic(message);
           expect(isOffTopic).toBe(false);
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -178,7 +179,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
 
           agent.endConversation();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -197,7 +198,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
           agent.endConversation();
           mockGeminiClient.generateCoachingTip.mockClear();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -222,7 +223,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
             expect(redirection).toContain('?');
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -249,7 +250,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
 
           agent.endConversation();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -271,7 +272,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
           mockElevenLabsClient.textToSpeech.mockClear();
           mockAudioManager.enqueue.mockClear();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -297,7 +298,7 @@ describe('ConversationAgent Property Tests - Off-Topic Handling', () => {
             agent.endConversation();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

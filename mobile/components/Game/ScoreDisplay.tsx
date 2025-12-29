@@ -13,11 +13,12 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import type { Angles } from '@/utils/angleCalculator';
 
 export interface ScoreDisplayProps {
   currentScore: number;
   averageScore: number;
-  matches?: Record<string, boolean>;
+  matches?: Partial<Record<keyof Angles, boolean>>;
   progress?: number; // 0-1 for progress bar
 }
 

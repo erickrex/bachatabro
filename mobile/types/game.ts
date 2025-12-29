@@ -44,6 +44,7 @@ export interface PoseFrame {
   timestamp: number;
   keypoints: Record<string, Keypoint>;
   angles: Angles;
+  angleConfidence?: Partial<Record<keyof Angles, number>>;
 }
 
 export interface PoseData {
@@ -71,8 +72,10 @@ export interface Score {
 
 export interface FrameScore {
   score: number;
-  matches: Record<string, boolean>;
+  matches: Partial<Record<keyof Angles, boolean>>;
   timestamp: number;
+  attemptedJoints?: number;
+  skippedJoints?: number;
 }
 
 export interface GameState {

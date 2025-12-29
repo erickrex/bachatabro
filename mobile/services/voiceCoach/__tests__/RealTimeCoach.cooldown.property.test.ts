@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { RealTimeCoach, RealTimeCoachConfig } from '../RealTimeCoach';
 import { GeminiClient } from '../GeminiClient';
 import { ElevenLabsClient } from '../ElevenLabsClient';
@@ -131,7 +132,7 @@ describe('RealTimeCoach Cooldown Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -176,7 +177,7 @@ describe('RealTimeCoach Cooldown Property Tests', () => {
             expect(shouldProvide2).toBe(true);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -220,7 +221,7 @@ describe('RealTimeCoach Cooldown Property Tests', () => {
             expect(shouldProvide2).toBe(false);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -276,7 +277,7 @@ describe('RealTimeCoach Cooldown Property Tests', () => {
             expect(feedbackCount).toBe(1);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -325,7 +326,7 @@ describe('RealTimeCoach Cooldown Property Tests', () => {
             expect(coach.shouldProvideFeedback(analysis3)).toBe(true);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 

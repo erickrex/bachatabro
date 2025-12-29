@@ -174,6 +174,7 @@ export class UnifiedPoseDetectionService {
 
     return {
       ...frame.angles,
+      angleConfidence: frame.angleConfidence,
       confidence: 1.0, // Pre-computed data is always confident
       source: 'pre-computed',
     };

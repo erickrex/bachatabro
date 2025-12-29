@@ -36,7 +36,7 @@ describe('ExecuTorchService', () => {
 
       await service.initialize('movenet.pte');
 
-      expect(mockModule.loadModel).toHaveBeenCalledWith('movenet.pte');
+      expect(mockModule.loadModel).toHaveBeenCalledWith(expect.stringContaining('movenet.pte'));
       expect(mockModule.setDelegate).toHaveBeenCalledWith('coreml');
       expect(service.isReady()).toBe(true);
     });

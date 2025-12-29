@@ -16,6 +16,7 @@ import {
   clearVoiceCoachSettings,
 } from '../voiceCoachStore';
 import type { VoiceCoachSettings, SupportedLanguage } from '../../types/voiceCoach';
+import { propertyConfig } from '../../test/propertyConfig';
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -95,7 +96,7 @@ describe('Voice Coach Store Persistence Properties', () => {
           expect(loaded?.coachingFrequency).toBe(settings.coachingFrequency);
           expect(loaded?.muted).toBe(settings.muted);
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -123,7 +124,7 @@ describe('Voice Coach Store Persistence Properties', () => {
             expect(loaded?.language).toBe(language);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -151,7 +152,7 @@ describe('Voice Coach Store Persistence Properties', () => {
             expect(loaded?.voiceId).toBe(voiceId);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -185,7 +186,7 @@ describe('Voice Coach Store Persistence Properties', () => {
             expect(loaded?.muted).toBe(muted);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -213,7 +214,7 @@ describe('Voice Coach Store Persistence Properties', () => {
             expect(loaded?.coachingFrequency).toBe(frequency);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -229,7 +230,7 @@ describe('Voice Coach Store Persistence Properties', () => {
           // Should return null when nothing is stored
           expect(loaded).toBeNull();
         }),
-        { numRuns: 10 }
+        propertyConfig({ numRuns: 10 }))
       );
     });
 
@@ -256,7 +257,7 @@ describe('Voice Coach Store Persistence Properties', () => {
             expect(loaded?.voiceId).toBe(lastSaved?.voiceId);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 }))
       );
     });
 
@@ -277,7 +278,7 @@ describe('Voice Coach Store Persistence Properties', () => {
           loaded = await loadVoiceCoachSettings();
           expect(loaded).toBeNull();
         }),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 }))
       );
     });
   });

@@ -143,33 +143,35 @@ class YOLOv8PoseDetector:
         return keypoints
 
 
-def calculate_angle(p1: Dict, p2: Dict, p3: Dict, min_confidence: float = 0.3) -> float:
+def calculate_angle(p1: Dict, p2: Dict, p3: Dict) -> float:
     """
-    Calculate angle between three points.
-    
-    Args:
-        p1, p2, p3: Points with 'x', 'y', 'confidence' keys
-        min_confidence: Minimum confidence threshold (default 0.3 for better coverage)
-        
-    Returns:
-        Angle in degrees
+    Calculate angle between three points regardless of confidence.
     """
-    # Lower threshold to 0.3 to capture more poses, especially wrists
-    if not all(p['confidence'] > min_confidence for p in [p1, p2, p3]):
-        return 0.0
-    
-    # Calculate vectors
     v1 = np.array([p1['x'] - p2['x'], p1['y'] - p2['y']])
     v2 = np.array([p3['x'] - p2['x'], p3['y'] - p2['y']])
     
-    # Calculate angle
-    cos_angle = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2) + 1e-6)
+    norm1 = np.linalg.norm(v1)
+    norm2 = np.linalg.norm(v2)
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+    
+    cos_angle = np.dot(v1, v2) / (norm1 * norm2)
     angle = np.arccos(np.clip(cos_angle, -1.0, 1.0))
     
     return float(np.degrees(angle))
 
 
-def calculate_angles(keypoints: Dict) -> Dict[str, float]:
+def joint_confidence(points: List[Dict]) -> float:
+    """
+    Calculate the minimum confidence across keypoints used for an angle.
+    """
+    if not points:
+        return 0.0
+    confidences = [float(p.get('confidence', 0.0)) for p in points]
+    return float(min(confidences))
+
+
+def calculate_angles(keypoints: Dict) -> tuple[Dict[str, float], Dict[str, float]]:
     """
     Calculate joint angles from keypoints.
     
@@ -183,52 +185,39 @@ def calculate_angles(keypoints: Dict) -> Dict[str, float]:
         Dictionary of joint angles
     """
     angles = {}
-    
-    # Left arm angle (shoulder-elbow-wrist)
-    if all(k in keypoints for k in ['leftShoulder', 'leftElbow', 'leftWrist']):
-        angles['leftArm'] = calculate_angle(
-            keypoints['leftShoulder'],
-            keypoints['leftElbow'],
-            keypoints['leftWrist']
-        )
-    
-    # Right arm angle
-    if all(k in keypoints for k in ['rightShoulder', 'rightElbow', 'rightWrist']):
-        angles['rightArm'] = calculate_angle(
-            keypoints['rightShoulder'],
-            keypoints['rightElbow'],
-            keypoints['rightWrist']
-        )
-    
-    # Left elbow angle (same as arm angle)
+    angle_confidence = {}
+
+    def set_angle(name: str, joints: List[str]):
+        points = [keypoints[j] for j in joints if j in keypoints]
+        if len(points) != 3:
+            angle_confidence[name] = 0.0
+            angles[name] = 0.0
+            return
+
+        confidence = joint_confidence(points)
+        angle_confidence[name] = confidence
+        if confidence == 0.0:
+            angles[name] = 0.0
+        else:
+            angles[name] = calculate_angle(*points)
+
+    set_angle('leftArm', ['leftShoulder', 'leftElbow', 'leftWrist'])
+    angle_confidence['leftElbow'] = angle_confidence.get('leftArm', 0.0)
     angles['leftElbow'] = angles.get('leftArm', 0.0)
-    
-    # Right elbow angle
+
+    set_angle('rightArm', ['rightShoulder', 'rightElbow', 'rightWrist'])
+    angle_confidence['rightElbow'] = angle_confidence.get('rightArm', 0.0)
     angles['rightElbow'] = angles.get('rightArm', 0.0)
-    
-    # Left thigh angle (hip-knee-ankle)
-    if all(k in keypoints for k in ['leftHip', 'leftKnee', 'leftAnkle']):
-        angles['leftThigh'] = calculate_angle(
-            keypoints['leftHip'],
-            keypoints['leftKnee'],
-            keypoints['leftAnkle']
-        )
-    
-    # Right thigh angle
-    if all(k in keypoints for k in ['rightHip', 'rightKnee', 'rightAnkle']):
-        angles['rightThigh'] = calculate_angle(
-            keypoints['rightHip'],
-            keypoints['rightKnee'],
-            keypoints['rightAnkle']
-        )
-    
-    # Left leg angle (same as thigh)
+
+    set_angle('leftThigh', ['leftHip', 'leftKnee', 'leftAnkle'])
+    angle_confidence['leftLeg'] = angle_confidence.get('leftThigh', 0.0)
     angles['leftLeg'] = angles.get('leftThigh', 0.0)
-    
-    # Right leg angle
+
+    set_angle('rightThigh', ['rightHip', 'rightKnee', 'rightAnkle'])
+    angle_confidence['rightLeg'] = angle_confidence.get('rightThigh', 0.0)
     angles['rightLeg'] = angles.get('rightThigh', 0.0)
-    
-    return angles
+
+    return angles, angle_confidence
 
 
 def extract_poses_from_video(
@@ -276,13 +265,14 @@ def extract_poses_from_video(
             try:
                 # Detect pose
                 keypoints = detector.detect_pose(frame)
-                angles = calculate_angles(keypoints)
+                angles, angle_confidence = calculate_angles(keypoints)
                 
                 frames_data.append({
                     "frameNumber": frame_num,
                     "timestamp": frame_num / fps,
                     "keypoints": keypoints,
-                    "angles": angles
+                    "angles": angles,
+                    "angleConfidence": angle_confidence,
                 })
             except Exception as e:
                 print(f"\n⚠ Error processing frame {frame_num}: {e}")

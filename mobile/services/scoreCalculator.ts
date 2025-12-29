@@ -7,16 +7,29 @@ import { Angles } from '../utils/angleCalculator';
 
 export interface FrameScore {
   score: number;
-  matches: Record<string, boolean>;
+  matches: Partial<Record<keyof Angles, boolean>>;
   timestamp: number;
+  attemptedJoints?: number;
+  skippedJoints?: number;
 }
 
-export interface ScoreBreakdown {
-  leftElbow: number;
-  rightElbow: number;
-  leftThigh: number;
-  rightThigh: number;
-}
+export type ScoreBreakdown = Record<keyof Angles, number>;
+type AngleSample = Partial<Angles> & {
+  angleConfidence?: Partial<Record<keyof Angles, number>>;
+};
+
+export const TRACKED_JOINTS: (keyof Angles)[] = [
+  'leftArm',
+  'rightArm',
+  'leftElbow',
+  'rightElbow',
+  'leftThigh',
+  'rightThigh',
+  'leftLeg',
+  'rightLeg',
+];
+
+const JOINT_CONFIDENCE_THRESHOLD = 0.3;
 
 /**
  * Calculate score for a single frame
@@ -26,47 +39,57 @@ export interface ScoreBreakdown {
  * @returns Frame score and match details
  */
 export function calculateFrameScore(
-  userAngles: Partial<Angles>,
-  referenceAngles: Partial<Angles>,
+  userAngles: AngleSample,
+  referenceAngles: AngleSample,
   threshold: number = 20
-): { score: number; matches: Record<string, boolean> } {
-  const matches: Record<string, boolean> = {};
+): {
+  score: number;
+  matches: Partial<Record<keyof Angles, boolean>>;
+  attemptedJoints: number;
+  skippedJoints: number;
+} {
+  const matches: Partial<Record<keyof Angles, boolean>> = {};
   let matchCount = 0;
   let totalJoints = 0;
+  let skippedJoints = 0;
   
-  // Compare only unique joint angles (avoid duplicates like leftLeg=leftThigh)
-  // Primary joints: arms (elbow angles) and legs (thigh angles)
-  const joints: (keyof Angles)[] = [
-    'leftElbow',
-    'rightElbow',
-    'leftThigh',
-    'rightThigh',
-  ];
-  
-  for (const joint of joints) {
+  for (const joint of TRACKED_JOINTS) {
     const userAngle = userAngles[joint];
     const refAngle = referenceAngles[joint];
     
     // Skip if either angle is missing
-    if (userAngle === undefined || refAngle === undefined) {
-      matches[joint] = false;
+    if (
+      userAngle === undefined ||
+      refAngle === undefined ||
+      !Number.isFinite(userAngle) ||
+      !Number.isFinite(refAngle)
+    ) {
+      skippedJoints++;
+      continue;
+    }
+
+    const userJointConfidence = userAngles.angleConfidence?.[joint];
+    if (
+      userJointConfidence !== undefined &&
+      userJointConfidence < JOINT_CONFIDENCE_THRESHOLD
+    ) {
+      skippedJoints++;
+      continue;
+    }
+
+    const refJointConfidence = referenceAngles.angleConfidence?.[joint];
+    if (
+      refJointConfidence !== undefined &&
+      refJointConfidence < JOINT_CONFIDENCE_THRESHOLD
+    ) {
+      skippedJoints++;
       continue;
     }
     
-    // If reference angle is 0 (low confidence in pre-computed data),
-    // give the user benefit of the doubt - count as match
-    if (refAngle === 0) {
-      matches[joint] = true;
-      totalJoints++;
-      matchCount++;
-      continue;
-    }
-    
-    // If user angle is 0 (low confidence detection), count as no match
-    // but still include in total to avoid inflated scores
-    if (userAngle === 0) {
-      matches[joint] = false;
-      totalJoints++;
+    // Angles of 0 indicate low-confidence detections in our pipeline.
+    // Skip them entirely so missing joints do not force 0% or 100% scores.
+    if (userAngle === 0 || refAngle === 0) {
+      skippedJoints++;
       continue;
     }
     
@@ -76,8 +99,9 @@ export function calculateFrameScore(
     const diff = Math.abs(userAngle - refAngle);
     
     // Check if within threshold
-    matches[joint] = diff <= threshold;
-    if (matches[joint]) {
+    const isMatch = diff <= threshold;
+    matches[joint] = isMatch;
+    if (isMatch) {
       matchCount++;
     }
   }
@@ -86,7 +110,7 @@ export function calculateFrameScore(
   // If no joints could be compared, return 0 instead of undefined behavior
   const score = totalJoints > 0 ? (matchCount / totalJoints) * 100 : 0;
   
-  return { score, matches };
+  return { score, matches, attemptedJoints: totalJoints, skippedJoints };
 }
 
 /**
@@ -107,36 +131,45 @@ export function calculateFinalScore(frameScores: number[]): number {
  * @returns Percentage match for each joint
  */
 export function calculateScoreBreakdown(
-  frameScores: Array<{ matches: Record<string, boolean> }>
+  frameScores: Array<{ matches: Partial<Record<keyof Angles, boolean>> }>
 ): ScoreBreakdown {
-  const breakdown: ScoreBreakdown = {
+  const breakdown = {
+    leftArm: 0,
+    rightArm: 0,
     leftElbow: 0,
     rightElbow: 0,
     leftThigh: 0,
     rightThigh: 0,
-  };
+    leftLeg: 0,
+    rightLeg: 0,
+  } as ScoreBreakdown;
   
-  if (frameScores.length === 0) return breakdown;
-  
-  const joints: (keyof ScoreBreakdown)[] = [
-    'leftElbow',
-    'rightElbow',
-    'leftThigh',
-    'rightThigh',
-  ];
-  
-  // Count matches for each joint
-  for (const joint of joints) {
-    let matchCount = 0;
-    
-    for (const frame of frameScores) {
-      if (frame.matches[joint]) {
-        matchCount++;
-      }
-    }
-    
-    breakdown[joint] = (matchCount / frameScores.length) * 100;
+  if (frameScores.length === 0) {
+    return breakdown;
   }
+  
+  const jointStats = TRACKED_JOINTS.reduce((acc, joint) => {
+    acc[joint] = { attempts: 0, matches: 0 };
+    return acc;
+  }, {} as Record<keyof Angles, { attempts: number; matches: number }>);
+
+  frameScores.forEach((frame) => {
+    TRACKED_JOINTS.forEach((joint) => {
+      const match = frame.matches?.[joint];
+      if (match === undefined) {
+        return;
+      }
+      jointStats[joint].attempts += 1;
+      if (match) {
+        jointStats[joint].matches += 1;
+      }
+    });
+  });
+
+  TRACKED_JOINTS.forEach((joint) => {
+    const { attempts, matches } = jointStats[joint];
+    breakdown[joint] = attempts > 0 ? (matches / attempts) * 100 : 0;
+  });
   
   return breakdown;
 }

@@ -4,21 +4,14 @@
  */
 
 import { Asset } from 'expo-asset';
+import type { Angles } from '@/types/game';
 
 export interface PoseFrame {
   frameNumber: number;
   timestamp: number;
   keypoints: Record<string, { x: number; y: number; confidence: number }>;
-  angles: {
-    leftArm: number;
-    rightArm: number;
-    leftElbow: number;
-    rightElbow: number;
-    leftThigh: number;
-    rightThigh: number;
-    leftLeg: number;
-    rightLeg: number;
-  };
+  angles: Angles;
+  angleConfidence?: Partial<Record<keyof Angles, number>>;
 }
 
 export interface PoseData {

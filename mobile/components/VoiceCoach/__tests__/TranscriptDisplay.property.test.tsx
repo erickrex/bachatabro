@@ -12,6 +12,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { TranscriptDisplay, TranscriptEntry } from '../TranscriptDisplay';
 
 describe('TranscriptDisplay Property Tests', () => {
@@ -60,7 +61,7 @@ describe('TranscriptDisplay Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      propertyConfig({ numRuns: 100 })
     );
   });
 
@@ -90,7 +91,7 @@ describe('TranscriptDisplay Property Tests', () => {
           expect(displayedText.props.children).toBe(speakingText);
         }
       ),
-      { numRuns: 100 }
+      propertyConfig({ numRuns: 100 })
     );
   });
 
@@ -120,7 +121,7 @@ describe('TranscriptDisplay Property Tests', () => {
           expect(displayedText.props.children).toBe(listeningText);
         }
       ),
-      { numRuns: 100 }
+      propertyConfig({ numRuns: 100 })
     );
   });
 
@@ -172,7 +173,7 @@ describe('TranscriptDisplay Property Tests', () => {
           expect(userDisplay.props.children).toBe(userText);
         }
       ),
-      { numRuns: 100 }
+      propertyConfig({ numRuns: 100 })
     );
   });
 
@@ -197,7 +198,7 @@ describe('TranscriptDisplay Property Tests', () => {
           expect(root).toBeTruthy();
         }
       ),
-      { numRuns: 100 }
+      propertyConfig({ numRuns: 100 })
     );
   });
 
@@ -232,7 +233,7 @@ describe('TranscriptDisplay Property Tests', () => {
           expect(displayedText.props.children).toBe(text);
         }
       ),
-      { numRuns: 100 }
+      propertyConfig({ numRuns: 100 })
     );
   });
 });

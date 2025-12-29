@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { AudioManager, AudioClip } from '../AudioManager';
 
 // Mock expo-av with volume tracking
@@ -33,10 +34,10 @@ jest.mock('expo-av', () => ({
           sound: {
             setOnPlaybackStatusUpdate: jest.fn((callback) => {
               // Simulate immediate playback completion
-              setTimeout(() => {
-                callback({ isLoaded: true, didJustFinish: true });
-              }, 10);
-            }),
+            setTimeout(() => {
+              callback({ isLoaded: true, didJustFinish: true });
+            }, 0);
+          }),
             unloadAsync: jest.fn(() => Promise.resolve()),
             stopAsync: jest.fn(() => Promise.resolve()),
           },
@@ -105,7 +106,7 @@ describe('AudioManager Audio Ducking Property Tests', () => {
             // Enqueue and play clip
             manager.enqueue(clip, false);
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // Should have called setVolumeAsync at least twice (duck and restore)
             expect(mockSetVolumeAsync).toHaveBeenCalled();
@@ -120,7 +121,7 @@ describe('AudioManager Audio Ducking Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100, timeout: 10000 }
+        propertyConfig({ numRuns: 100, timeout: 10000 })
       );
     });
 
@@ -167,7 +168,7 @@ describe('AudioManager Audio Ducking Property Tests', () => {
             clips.forEach((clip) => manager.enqueue(clip, false));
 
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // Should have ducked and restored for each clip
             // At minimum: duck, restore (for simplicity, we check that restore happened)
@@ -177,7 +178,7 @@ describe('AudioManager Audio Ducking Property Tests', () => {
             }
           }
         ),
-        { numRuns: 50, timeout: 10000 }
+        propertyConfig({ numRuns: 50, timeout: 10000 })
       );
     });
 
@@ -204,11 +205,11 @@ describe('AudioManager Audio Ducking Property Tests', () => {
             await expect(async () => {
               manager.enqueue(clip, false);
               await manager.play();
-              await new Promise((resolve) => setTimeout(resolve, 50));
+              await new Promise((resolve) => setTimeout(resolve, 5));
             }).not.toThrow();
           }
         ),
-        { numRuns: 50, timeout: 10000 }
+        propertyConfig({ numRuns: 50, timeout: 10000 })
       );
     });
 
@@ -246,7 +247,7 @@ describe('AudioManager Audio Ducking Property Tests', () => {
 
               manager.enqueue(clip, false);
               await manager.play();
-              await new Promise((resolve) => setTimeout(resolve, 30));
+              await new Promise((resolve) => setTimeout(resolve, 5));
             }
 
             // After all sessions, volume should be restored to original
@@ -256,7 +257,7 @@ describe('AudioManager Audio Ducking Property Tests', () => {
             }
           }
         ),
-        { numRuns: 50, timeout: 10000 }
+        propertyConfig({ numRuns: 50, timeout: 10000 })
       );
     });
   });

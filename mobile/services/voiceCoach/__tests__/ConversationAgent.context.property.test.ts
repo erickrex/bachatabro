@@ -7,6 +7,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { ConversationAgent, ConversationAgentConfig, ConversationMessage } from '../ConversationAgent';
 import { GeminiClient } from '../GeminiClient';
 import { ElevenLabsClient } from '../ElevenLabsClient';
@@ -136,7 +137,7 @@ describe('ConversationAgent Property Tests - Context Retention', () => {
             agent.endConversation();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -171,7 +172,7 @@ describe('ConversationAgent Property Tests - Context Retention', () => {
             agent.endConversation();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -210,7 +211,7 @@ describe('ConversationAgent Property Tests - Context Retention', () => {
             agent.endConversation();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -246,7 +247,7 @@ describe('ConversationAgent Property Tests - Context Retention', () => {
             agent.endConversation();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -284,7 +285,7 @@ describe('ConversationAgent Property Tests - Context Retention', () => {
             agent.endConversation();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -311,7 +312,7 @@ describe('ConversationAgent Property Tests - Context Retention', () => {
 
           agent.endConversation();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

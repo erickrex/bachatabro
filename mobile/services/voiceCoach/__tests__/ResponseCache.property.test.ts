@@ -10,6 +10,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { ResponseCache } from '../ResponseCache';
 
 describe('ResponseCache Property Tests', () => {
@@ -55,7 +56,7 @@ describe('ResponseCache Property Tests', () => {
             expect(thirdGet).toBe(responseValue);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -83,7 +84,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cacheKey2).toBe(cacheKey3);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -114,7 +115,7 @@ describe('ResponseCache Property Tests', () => {
             expect(key1).not.toBe(key2);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -139,7 +140,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cache.get(key)).toBeNull();
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
 
@@ -167,7 +168,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cache.getSize()).toBeLessThanOrEqual(maxSize);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -205,7 +206,7 @@ describe('ResponseCache Property Tests', () => {
             expect(stats.hits).toBe(expectedHits);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
 
@@ -229,7 +230,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cache.has(actualNonExisting)).toBe(false);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -258,7 +259,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cache.has(keyToDelete)).toBe(false);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -292,7 +293,7 @@ describe('ResponseCache Property Tests', () => {
             expect(stats.misses).toBe(0);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -323,7 +324,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cache.getSize()).toBe(0);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
 
@@ -348,7 +349,7 @@ describe('ResponseCache Property Tests', () => {
             expect(cache.get(key)).toBeNull();
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
   });

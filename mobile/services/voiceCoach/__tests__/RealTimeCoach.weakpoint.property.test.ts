@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { RealTimeCoach, RealTimeCoachConfig } from '../RealTimeCoach';
 import { GeminiClient } from '../GeminiClient';
 import { ElevenLabsClient } from '../ElevenLabsClient';
@@ -102,7 +103,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
             expect(weakestPart).toBe(weakPoints[0]);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -123,7 +124,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
           // Should return "overall" when no weak points
           expect(weakestPart).toBe('overall');
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -147,7 +148,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
             expect(weakestPart).toBe(weakPoint);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -180,7 +181,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -213,7 +214,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
             );
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -241,7 +242,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
             expect(weakestPart.length).toBeGreaterThan(0);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -269,7 +270,7 @@ describe('RealTimeCoach Weak Point Property Tests', () => {
             expect(result2).toBe(result3);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

@@ -44,13 +44,13 @@ describe('angleCalculator', () => {
       expect(angle).toBeCloseTo(135, 1); // The implementation returns the supplementary angle
     });
     
-    it('should return 0 for low confidence points', () => {
+    it('should still return angle for low confidence points when data exists', () => {
       const p1 = { x: 0, y: 0, confidence: 0.3 };
       const p2 = { x: 1, y: 0, confidence: 0.9 };
       const p3 = { x: 1, y: 1, confidence: 0.9 };
       
       const angle = calculateAngle(p1, p2, p3);
-      expect(angle).toBe(0);
+      expect(angle).toBeGreaterThan(0);
     });
   });
   
@@ -81,6 +81,27 @@ describe('angleCalculator', () => {
       expect(angles).toHaveProperty('rightThigh');
       expect(angles).toHaveProperty('leftLeg');
       expect(angles).toHaveProperty('rightLeg');
+    });
+
+    it('should attach per-joint confidence metadata', () => {
+      const keypoints = {
+        leftShoulder: { x: 0.4, y: 0.3, confidence: 0.9 },
+        leftElbow: { x: 0.3, y: 0.5, confidence: 0.5 },
+        leftWrist: { x: 0.2, y: 0.5, confidence: 0.4 },
+        rightShoulder: { x: 0.6, y: 0.3, confidence: 0.8 },
+        rightElbow: { x: 0.7, y: 0.5, confidence: 0.8 },
+        rightWrist: { x: 0.8, y: 0.5, confidence: 0.8 },
+        leftHip: { x: 0.4, y: 0.6, confidence: 0.7 },
+        leftKnee: { x: 0.4, y: 0.8, confidence: 0.7 },
+        leftAnkle: { x: 0.4, y: 1.0, confidence: 0.7 },
+        rightHip: { x: 0.6, y: 0.6, confidence: 0.9 },
+        rightKnee: { x: 0.6, y: 0.8, confidence: 0.9 },
+        rightAnkle: { x: 0.6, y: 1.0, confidence: 0.9 },
+      };
+
+      const angles = calculateAngles(keypoints);
+      expect(angles.angleConfidence?.leftArm).toBeCloseTo(0.4);
+      expect(angles.angleConfidence?.rightArm).toBeCloseTo(0.8);
     });
   });
   
