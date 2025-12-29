@@ -1,6 +1,7 @@
 /**
  * Type definitions for pose detection modes and ExecuTorch integration
  */
+import type { Angles } from './game';
 
 export enum DetectionMode {
   AUTO = 'auto',
@@ -28,17 +29,10 @@ export interface DetectionInput {
   songId?: string; // for precomputed
 }
 
-export interface PoseAngles {
-  leftArm: number;
-  rightArm: number;
-  leftElbow: number;
-  rightElbow: number;
-  leftThigh: number;
-  rightThigh: number;
-  leftLeg: number;
-  rightLeg: number;
+export interface PoseAngles extends Angles {
   confidence?: number;
   source?: 'real-time' | 'pre-computed';
+  angleConfidence?: Partial<Record<keyof Angles, number>>;
 }
 
 export interface PerformanceMetrics {

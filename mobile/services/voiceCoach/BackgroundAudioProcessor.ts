@@ -80,16 +80,40 @@ export class BackgroundAudioProcessor {
       return operation();
     }
 
+    const hasInteractionManager = !!InteractionManager && typeof InteractionManager.runAfterInteractions === 'function';
+    if (!hasInteractionManager) {
+      return operation();
+    }
+
     // For normal/low priority, defer to after interactions
     return new Promise((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout | null = null;
+      const executeOperation = () => {
+        operation()
+          .then((result) => {
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+            resolve(result);
+          })
+          .catch((error) => {
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+            reject(error);
+          });
+      };
+
       const handle = InteractionManager.runAfterInteractions(() => {
-        operation().then(resolve).catch(reject);
+        executeOperation();
       });
 
       // Set timeout for low priority tasks
       if (priority === 'low') {
-        setTimeout(() => {
-          handle.cancel();
+        timeoutId = setTimeout(() => {
+          if (typeof (handle as any)?.cancel === 'function') {
+            (handle as any).cancel();
+          }
           reject(new Error('Task timeout'));
         }, this.taskTimeoutMs);
       }

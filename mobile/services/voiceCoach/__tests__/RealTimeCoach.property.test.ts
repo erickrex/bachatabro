@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { RealTimeCoach, RealTimeCoachConfig } from '../RealTimeCoach';
 import { GeminiClient } from '../GeminiClient';
 import { ElevenLabsClient } from '../ElevenLabsClient';
@@ -109,7 +110,7 @@ describe('RealTimeCoach Property Tests', () => {
             expect(feedbackType).toBe('coaching_tip');
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -139,7 +140,7 @@ describe('RealTimeCoach Property Tests', () => {
             expect(feedbackType).toBe('encouragement');
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -169,7 +170,7 @@ describe('RealTimeCoach Property Tests', () => {
             expect(feedbackType).toBe('none');
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -199,7 +200,7 @@ describe('RealTimeCoach Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 

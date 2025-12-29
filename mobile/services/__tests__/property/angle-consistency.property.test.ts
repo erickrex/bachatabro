@@ -8,6 +8,7 @@
 import fc from 'fast-check';
 import { calculateAngles } from '@/utils/angleCalculator';
 import type { Keypoint } from '@/types/pose';
+import { propertyConfig } from '../../../test/propertyConfig';
 
 describe('Property-Based Tests: Angle Consistency', () => {
   describe('P-003: Angle Calculation Consistency', () => {
@@ -30,7 +31,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             expect(angles1.rightHip).toBe(angles2.rightHip);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -50,7 +51,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             });
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
 
@@ -64,7 +65,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             expect(angles).toBeDefined();
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 }))
       );
     });
 
@@ -90,7 +91,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             expect(Math.abs(angles1.rightElbow - angles2.rightElbow)).toBeLessThan(0.1);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 }))
       );
     });
   });
@@ -124,7 +125,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             });
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
   });
@@ -147,7 +148,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             expect(angles1).toEqual(angles2);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 }))
       );
     });
   });
@@ -177,7 +178,7 @@ describe('Property-Based Tests: Angle Consistency', () => {
             expect(score3).toBe(score1);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 }))
       );
     });
   });

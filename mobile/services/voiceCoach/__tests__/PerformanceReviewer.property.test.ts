@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { PerformanceReviewer, PerformanceReviewerConfig, GameSession } from '../PerformanceReviewer';
 import { GeminiClient } from '../GeminiClient';
 import { ElevenLabsClient } from '../ElevenLabsClient';
@@ -164,7 +165,7 @@ describe('PerformanceReviewer Property Tests', () => {
             })
           );
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -181,7 +182,7 @@ describe('PerformanceReviewer Property Tests', () => {
             })
           );
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -201,7 +202,7 @@ describe('PerformanceReviewer Property Tests', () => {
             );
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -221,7 +222,7 @@ describe('PerformanceReviewer Property Tests', () => {
             );
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -239,7 +240,7 @@ describe('PerformanceReviewer Property Tests', () => {
             expect(call.weakestPart).toBeTruthy();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -260,7 +261,7 @@ describe('PerformanceReviewer Property Tests', () => {
             );
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -278,7 +279,7 @@ describe('PerformanceReviewer Property Tests', () => {
             })
           );
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -298,7 +299,7 @@ describe('PerformanceReviewer Property Tests', () => {
           expect(mockGeminiClient.generatePerformanceReview).not.toHaveBeenCalled();
           expect(mockElevenLabsClient.textToSpeech).not.toHaveBeenCalled();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -318,7 +319,7 @@ describe('PerformanceReviewer Property Tests', () => {
           expect(result.improvementTip).toBe('');
           expect(result.audioClip).toBeUndefined();
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -346,7 +347,7 @@ describe('PerformanceReviewer Property Tests', () => {
             );
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

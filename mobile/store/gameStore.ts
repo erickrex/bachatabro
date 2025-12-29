@@ -12,6 +12,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Song, FrameScore, PoseData } from '@/types/game';
+import { TRACKED_JOINTS } from '@/services/scoreCalculator';
 
 interface GameState {
   // State
@@ -34,6 +35,8 @@ interface GameState {
   setError: (error: string) => void;
   reset: () => void;
 }
+
+const JOINTS_PER_FRAME = TRACKED_JOINTS.length;
 
 const initialState = {
   status: 'idle' as const,
@@ -85,6 +88,33 @@ export const useGameStore = create<GameState>()(
         const finalScore = scores.length > 0
           ? scores.reduce((a, b) => a + b, 0) / scores.length
           : 0;
+
+        const coverage = state.frameScores.reduce(
+          (acc, frame) => {
+            const attempted =
+              frame.attemptedJoints ??
+              Object.keys(frame.matches || {}).length;
+            const skipped =
+              frame.skippedJoints ??
+              Math.max(JOINTS_PER_FRAME - attempted, 0);
+
+            acc.attempted += attempted;
+            acc.skipped += skipped;
+            return acc;
+          },
+          { attempted: 0, skipped: 0 }
+        );
+
+        const totalComparisons = coverage.attempted + coverage.skipped;
+        if (totalComparisons > 0) {
+          const skippedFraction = coverage.skipped / totalComparisons;
+          console.info('[PoseScore] Session joint coverage', {
+            frames: state.frameScores.length,
+            attemptedJoints: coverage.attempted,
+            skippedJoints: coverage.skipped,
+            skipFraction: Number(skippedFraction.toFixed(3)),
+          });
+        }
         
         return {
           status: 'finished',

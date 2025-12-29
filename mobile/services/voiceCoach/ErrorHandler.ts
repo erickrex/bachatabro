@@ -47,6 +47,7 @@ export class ErrorHandler {
   // Event handlers
   public onStatusChange: ((status: VoiceFeatureStatus) => void) | null = null;
   public onNotification: ((message: string) => void) | null = null;
+  public onError: ((error: VoiceCoachError) => void) | null = null;
 
   constructor(config?: ErrorHandlerConfig) {
     this.maxConsecutiveFailures = config?.maxConsecutiveFailures ?? 5;
@@ -64,6 +65,7 @@ export class ErrorHandler {
 
     // Log error for debugging
     console.error('[VoiceCoach]', error.type, error.message, context?.operation);
+    this.onError?.(error);
 
     if (this.consecutiveFailures >= this.maxConsecutiveFailures) {
       this.disableVoiceFeatures();

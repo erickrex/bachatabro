@@ -6,6 +6,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import {
   BatteryAdapter,
   BatteryAdapterConfig,
@@ -73,7 +74,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(adaptedCooldown).toBe(expectedCooldown);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -102,7 +103,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(adaptedCooldown).toBe(normalCooldown);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -132,7 +133,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(adaptedCooldown).toBe(normalCooldown);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -153,7 +154,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(isLow).toBe(expectedLow);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -188,7 +189,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(belowThreshold).toBe(normalCooldown * 2); // Below threshold = increased
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -214,7 +215,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(cooldown).toBe(expectedCooldown);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -236,7 +237,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(cooldown).toBeGreaterThan(0);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -257,7 +258,7 @@ describe('BatteryAdapter Property Tests', () => {
             expect(lowBatteryResult).toBeGreaterThanOrEqual(normalResult);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

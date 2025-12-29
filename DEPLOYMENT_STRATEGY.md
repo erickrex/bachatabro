@@ -10,6 +10,42 @@ Bachata Bro is a dance coaching mobile app with two main components:
 
 ---
 
+## Local Development & Verification Workflow
+
+1. **Tooling**
+   - Node.js 20.x with npm, `expo-cli` and `eas-cli`.
+   - `uv` (Python package manager) for backend + pose tools: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+   - Git LFS installed and initialized (`git lfs install`) to pull bundled media.
+
+2. **Initial setup**
+   ```bash
+   npm install -g eas-cli
+   cd mobile && npm install
+   cd ../backend/functions && uv sync --dev
+   cd ../../python-tools && uv sync
+   ./setup_models.sh   # downloads pose.pte + YOLO weights
+   ```
+
+3. **Environment variables**
+   - Copy `backend/functions/.env.example` → `.env` and fill `ELEVENLABS_API_KEY`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`.
+   - Copy `mobile/.env.example` → `.env` with `EXPO_PUBLIC_BACKEND_URL`.
+
+4. **Local testing matrix**
+   - Backend unit/property tests: `cd backend/functions && uv run pytest --maxfail=1`.
+   - Mobile unit/property tests (parallel by default): `cd mobile && npm test`. Override Fast-Check runs via `FC_MAX_RUNS` env vars if needed.
+   - Pose scoring calibration: run a simulated game to emit `[PoseScore] Session joint coverage` logs, then adjust `JOINT_CONFIDENCE_THRESHOLD` if required (see `joint_recognition_calibration.md`).
+
+5. **Local services**
+   - Backend dev server: `cd backend/functions && uv run uvicorn main:app --reload --port 8000`.
+   - Mobile dev client: `cd mobile && npx expo start --dev-client`.
+   - Python pose tools (for regenerating JSON poses): `cd python-tools && uv run python regenerate_poses.py --videos ../mobile/assets/videos`.
+
+6. **Smoke testing**
+   - Hit `http://localhost:8000/health`, `/elevenlabs/health`, `/gemini/health`.
+   - In Expo dev client, open a song and confirm live scores vary (no 0/100% swings) and joint coverage logs show <30% skips.
+
+---
+
 ## Architecture Summary
 
 ```
@@ -245,6 +281,15 @@ eas build --platform ios --profile production
 
 **Total upload size**: ~10-50MB (not 1.3GB)
 
+### 2.6 Pre-release QA checklist
+
+- `cd mobile && npm test` → should be green before every EAS build.
+- On a physical device (iOS + Android):
+  - Confirm onboarding + song selection.
+  - Start a practice session and observe real-time scoring; ensure the session coverage log shows <0.35 skipped fraction.
+  - Trigger voice coach feedback (scores <70% produce coaching tips, >90% produce encouragement).
+- If pose accuracy drifts, rerun the pose pipeline (Phase 4) before shipping.
+
 ---
 
 ## Phase 3: Environment Configuration
@@ -476,4 +521,31 @@ eas build --platform android --profile preview
 2. **Get the Cloud Run URL** from deployment output
 3. **Update mobile eas.json** with the backend URL
 4. **Build mobile app** with EAS
-5. **Test end-to-end** before production release
+5. **Test end-to-end** (backend smoke tests + Expo device session + pose coverage logs)
+
+---
+
+## Pose Asset Pipeline & Calibration
+
+Use this when choreography changes or score calibration drifts.
+
+1. **Regenerate poses**
+   ```bash
+   cd python-tools
+   uv sync
+   uv run python regenerate_poses.py \
+     --videos ../mobile/assets/videos \
+     --output ../mobile/assets/poses
+   ```
+2. **Backfill joint confidence into existing assets**
+   ```bash
+   uv run python backfill_pose_confidence.py --poses-dir ../mobile/assets/poses
+   ```
+   This script recalculates angles from saved keypoints so older JSON files gain `angleConfidence` data.
+3. **Ship updated assets**
+   - Verify JSON diffs (`git diff mobile/assets/poses`).
+   - Re-run `cd mobile && npm test -- scoreCalculator angleCalculator`.
+4. **Tune recognition**
+   - Dance a full song on a dev build.
+   - Check Metro logs for `[PoseScore] Session joint coverage`. If `skipFraction` exceeds 0.35 consistently, lower pose threshold (see `joint_recognition_calibration.md`) or investigate camera lighting/device.
+   - Once satisfied, commit pose changes with notes on the source videos + regression data.

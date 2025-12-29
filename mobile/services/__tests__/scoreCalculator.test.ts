@@ -8,6 +8,7 @@ import {
   calculateScoreBreakdown,
   getPerformanceRating,
   calculateWeightedScore,
+  TRACKED_JOINTS,
 } from '../scoreCalculator';
 
 describe('scoreCalculator', () => {
@@ -28,6 +29,8 @@ describe('scoreCalculator', () => {
       expect(result.score).toBe(100);
       expect(result.matches.leftArm).toBe(true);
       expect(result.matches.rightArm).toBe(true);
+      expect(result.attemptedJoints).toBeGreaterThan(0);
+      expect(result.skippedJoints).toBe(0);
     });
 
     it('should return 0% for completely different angles', () => {
@@ -55,6 +58,8 @@ describe('scoreCalculator', () => {
 
       const result = calculateFrameScore(userAngles, refAngles, 20);
       expect(result.score).toBe(0);
+      expect(result.attemptedJoints).toBe(0);
+      expect(result.skippedJoints).toBeGreaterThan(0);
     });
 
     it('should handle partial matches', () => {
@@ -111,6 +116,40 @@ describe('scoreCalculator', () => {
       const result = calculateFrameScore(userAngles, refAngles, 20);
       // Should only compare non-zero angles
       expect(result.score).toBeGreaterThan(0);
+      expect(result.matches.leftArm).toBeUndefined();
+      expect(result.matches.rightArm).toBe(true);
+      expect(result.matches.rightElbow).toBe(true);
+      expect(result.attemptedJoints).toBeGreaterThan(0);
+      expect(result.skippedJoints).toBeGreaterThan(0);
+    });
+
+    it('should skip joints with low confidence metadata', () => {
+      const userAngles = {
+        leftArm: 90,
+        rightArm: 90,
+        leftElbow: 90,
+        rightElbow: 90,
+        leftThigh: 180,
+        rightThigh: 180,
+        leftLeg: 180,
+        rightLeg: 180,
+        angleConfidence: {
+          leftArm: 0.9,
+          rightArm: 0.9,
+        },
+      };
+
+      const refAngles = {
+        ...userAngles,
+        angleConfidence: {
+          leftArm: 0.1,
+          rightArm: 0.9,
+        },
+      };
+
+      const result = calculateFrameScore(userAngles, refAngles, 20);
+      expect(result.matches.leftArm).toBeUndefined();
+      expect(result.attemptedJoints).toBeLessThan(TRACKED_JOINTS.length);
     });
   });
 
@@ -166,6 +205,26 @@ describe('scoreCalculator', () => {
       expect(breakdown.rightArm).toBe(50); // 1/2
       expect(breakdown.leftElbow).toBe(50); // 1/2
       expect(breakdown.rightElbow).toBe(0); // 0/2
+    });
+
+    it('should ignore joints without attempts when calculating percentages', () => {
+      const frameScores = [
+        {
+          matches: {
+            leftArm: true,
+          },
+        },
+        {
+          matches: {
+            rightArm: false,
+          },
+        },
+      ];
+
+      const breakdown = calculateScoreBreakdown(frameScores);
+      expect(breakdown.leftArm).toBe(100); // 1/1
+      expect(breakdown.rightArm).toBe(0); // 0/1
+      expect(breakdown.leftLeg).toBe(0); // no attempts, stays 0
     });
 
     it('should return zeros for empty array', () => {

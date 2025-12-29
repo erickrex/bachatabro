@@ -185,7 +185,7 @@ export default function GameScreen() {
       });
 
       // Calculate score by comparing user pose with reference
-      const { score, matches } = calculateFrameScore(
+      const { score, matches, attemptedJoints, skippedJoints } = calculateFrameScore(
         userPose,
         referencePose,
         20 // threshold in degrees
@@ -196,6 +196,8 @@ export default function GameScreen() {
         score,
         matches,
         timestamp: frameIndex / poseData.fps,
+        attemptedJoints,
+        skippedJoints,
       });
 
       setCurrentScore(score);

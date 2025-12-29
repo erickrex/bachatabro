@@ -7,6 +7,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { VoiceNavigation, VoiceNavigationConfig, Router } from '../VoiceNavigation';
 import { ElevenLabsClient } from '../ElevenLabsClient';
 import { AudioManager } from '../AudioManager';
@@ -135,7 +136,7 @@ describe('VoiceNavigation Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -147,7 +148,7 @@ describe('VoiceNavigation Property Tests', () => {
           const command = navigation.parseCommand(transcript);
           expect(command.type).toBe('show_leaderboard');
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -159,7 +160,7 @@ describe('VoiceNavigation Property Tests', () => {
           const command = navigation.parseCommand(transcript);
           expect(command.type).toBe('get_best_score');
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -171,7 +172,7 @@ describe('VoiceNavigation Property Tests', () => {
           const command = navigation.parseCommand(transcript);
           expect(command.type).toBe('open_settings');
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -183,7 +184,7 @@ describe('VoiceNavigation Property Tests', () => {
           const command = navigation.parseCommand(transcript);
           expect(command.type).toBe('help');
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -224,7 +225,7 @@ describe('VoiceNavigation Property Tests', () => {
             expect(command.transcript).toBe(transcript);
           }
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -254,7 +255,7 @@ describe('VoiceNavigation Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -300,7 +301,7 @@ describe('VoiceNavigation Property Tests', () => {
             expect(command.type).toBe('play_song');
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

@@ -9,6 +9,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { RealTimeCoach } from '../RealTimeCoach';
 import { PerformanceReviewer } from '../PerformanceReviewer';
 import { ConversationAgent } from '../ConversationAgent';
@@ -138,7 +139,7 @@ describe('Language Consistency Properties', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -195,7 +196,7 @@ describe('Language Consistency Properties', () => {
             );
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -241,7 +242,7 @@ describe('Language Consistency Properties', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -277,7 +278,7 @@ describe('Language Consistency Properties', () => {
             })
           );
         }),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -315,7 +316,7 @@ describe('Language Consistency Properties', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -363,7 +364,7 @@ describe('Language Consistency Properties', () => {
             }
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
   });

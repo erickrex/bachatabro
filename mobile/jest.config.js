@@ -11,6 +11,9 @@ module.exports = {
     '!**/jest.setup.js',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  moduleNameMapper: {
+    '\\.(png|jpg|jpeg|mp3|mp4|pte)$': '<rootDir>/__mocks__/fileMock.js',
+  },
   setupFiles: ['<rootDir>/jest.polyfills.js'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 };

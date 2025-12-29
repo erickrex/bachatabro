@@ -10,6 +10,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { NetworkRetryQueue, RequestType, QueuedRequest } from '../NetworkRetryQueue';
 
 describe('NetworkRetryQueue Property Tests', () => {
@@ -48,7 +49,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(queue.getQueueLength()).toBe(1);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -88,7 +89,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(queue.getQueueLength()).toBe(0);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
 
@@ -132,7 +133,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(queue.getQueueLength()).toBe(0);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
 
@@ -172,7 +173,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(executionOrder).toEqual(expectedOrder);
           }
         ),
-        { numRuns: 50 }
+        propertyConfig({ numRuns: 50 })
       );
     });
 
@@ -201,7 +202,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -235,7 +236,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             });
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -269,7 +270,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(retriedEvents[0].success).toBe(shouldSucceed);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -306,7 +307,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(remainingIds).not.toContain(idToRemove);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -334,7 +335,7 @@ describe('NetworkRetryQueue Property Tests', () => {
             expect(queue.hasRequests()).toBe(false);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

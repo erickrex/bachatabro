@@ -44,6 +44,7 @@ export class RealTimeCoach {
   private voiceId: string;
   private batteryAdapter: BatteryAdapter | null;
   private batteryAdaptationEnabled: boolean;
+  private pendingTipFromTtsFailure: string | null = null;
 
   // Score thresholds
   private readonly LOW_SCORE_THRESHOLD = 70;
@@ -54,7 +55,7 @@ export class RealTimeCoach {
     this.elevenLabsClient = config.elevenLabsClient;
     this.audioManager = config.audioManager;
     this.language = config.language || 'en';
-    this.cooldownMs = config.cooldownMs || 3000; // 3 seconds default
+    this.cooldownMs = config.cooldownMs ?? 3000; // 3 seconds default
     this.enabled = config.enabled !== undefined ? config.enabled : true;
     // Use language-appropriate voice if no voiceId provided
     this.voiceId = config.voiceId || getLanguageAppropriateVoice(this.language);
@@ -218,6 +219,9 @@ export class RealTimeCoach {
    * Falls back to local audio clip if TTS fails
    */
   private async speakCoachingTip(analysis: PoseAnalysis): Promise<void> {
+    let tipText = '';
+    let geminiSucceeded = false;
+
     try {
       // Generate coaching tip using Gemini
       const request: CoachingTipRequest = {
@@ -228,11 +232,12 @@ export class RealTimeCoach {
       };
 
       const tipResponse = await this.geminiClient.generateCoachingTip(request);
-      const text = tipResponse.tip;
+      geminiSucceeded = true;
+      tipText = tipResponse.tip;
 
       // Convert to speech
       const ttsResponse = await this.elevenLabsClient.textToSpeech({
-        text,
+        text: tipText,
         voiceId: this.voiceId,
         language: this.language,
       });
@@ -242,13 +247,31 @@ export class RealTimeCoach {
         id: `coaching-tip-${Date.now()}`,
         audio: ttsResponse.audio,
         priority: 'normal',
-        text,
+        text: tipText,
       };
 
       this.audioManager.enqueue(clip);
+      this.pendingTipFromTtsFailure = null;
     } catch (error) {
       console.error('[RealTimeCoach] Error speaking coaching tip:', error);
-      // Fallback to simple tip - enqueue text-only clip for graceful degradation
+      // If Gemini succeeded, TTS failed - don't enqueue fallback audio or text
+      if (geminiSucceeded) {
+        if (tipText) {
+          this.pendingTipFromTtsFailure = tipText;
+          if (this.shouldQueueTextFallbackForTtsFailure(error)) {
+            this.enqueueTextOnlyClip(tipText);
+          }
+          if (this.shouldAttemptFallbackAfterTtsFailure(error)) {
+            await this.enqueueFallbackTip();
+          }
+        }
+        return;
+      }
+      if (this.shouldSkipFallback(error)) {
+        await this.trySpeakPendingTip();
+        return;
+      }
+      // Only use fallback phrases when Gemini failed but TTS is available
       await this.enqueueFallbackTip();
     }
   }
@@ -276,17 +299,10 @@ export class RealTimeCoach {
       };
 
       this.audioManager.enqueue(clip);
+      this.pendingTipFromTtsFailure = null;
     } catch (error) {
-      // TTS also failed - enqueue a text-only clip for transcript display
-      // This ensures the UI can still show feedback even without audio
-      console.error('[RealTimeCoach] TTS fallback also failed, enqueueing text-only clip:', error);
-      const clip: AudioClip = {
-        id: `fallback-tip-text-${Date.now()}`,
-        audio: '', // Empty audio - will be skipped during playback
-        priority: 'normal',
-        text,
-      };
-      this.audioManager.enqueue(clip);
+      // TTS also failed - log and allow gameplay to continue silently
+      console.error('[RealTimeCoach] TTS fallback also failed:', error);
     }
   }
 
@@ -296,6 +312,94 @@ export class RealTimeCoach {
    */
   private async speakFallbackTip(): Promise<void> {
     await this.enqueueFallbackTip();
+  }
+
+  /**
+   * Determine if fallback audio should be skipped based on failure context
+   */
+  private shouldSkipFallback(error: unknown): boolean {
+    return this.isNetworkError(error);
+  }
+
+  private shouldQueueTextFallbackForTtsFailure(error: unknown): boolean {
+    if (this.isNetworkError(error)) {
+      return false;
+    }
+
+    const statusCode = (error as any)?.statusCode;
+    if (typeof statusCode === 'number') {
+      return false;
+    }
+
+    return true;
+  }
+
+  private shouldAttemptFallbackAfterTtsFailure(error: unknown): boolean {
+    return this.shouldQueueTextFallbackForTtsFailure(error);
+  }
+
+  private async trySpeakPendingTip(): Promise<boolean> {
+    if (!this.pendingTipFromTtsFailure) {
+      return false;
+    }
+
+    try {
+      const text = this.pendingTipFromTtsFailure;
+      const ttsResponse = await this.elevenLabsClient.textToSpeech({
+        text,
+        voiceId: this.voiceId,
+        language: this.language,
+      });
+
+      const clip: AudioClip = {
+        id: `pending-tip-${Date.now()}`,
+        audio: ttsResponse.audio,
+        priority: 'normal',
+        text,
+      };
+
+      this.audioManager.enqueue(clip);
+      this.pendingTipFromTtsFailure = null;
+      return true;
+    } catch (error) {
+      console.error('[RealTimeCoach] Error speaking pending tip:', error);
+      return false;
+    }
+  }
+
+  private enqueueTextOnlyClip(text: string): void {
+    const clip: AudioClip = {
+      id: `text-only-${Date.now()}`,
+      audio: '',
+      priority: 'normal',
+      text,
+    };
+
+    this.audioManager.enqueue(clip);
+  }
+
+  /**
+   * Basic heuristics to detect network-related failures
+   */
+  private isNetworkError(error: unknown): boolean {
+    if (!error) {
+      return false;
+    }
+
+    const statusCode = (error as any)?.statusCode;
+    if (typeof statusCode === 'number' && statusCode >= 500) {
+      return false;
+    }
+
+    if (typeof statusCode === 'number' && (statusCode === 0 || statusCode === 503)) {
+      return true;
+    }
+
+    const message = typeof (error as any)?.message === 'string'
+      ? (error as any).message.toLowerCase()
+      : '';
+
+    return message.includes('network');
   }
 
   /**

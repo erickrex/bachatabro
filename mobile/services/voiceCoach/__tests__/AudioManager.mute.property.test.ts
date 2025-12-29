@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { AudioManager, AudioClip } from '../AudioManager';
 
 // Mock expo-av
@@ -14,10 +15,10 @@ jest.mock('expo-av', () => ({
         Promise.resolve({
           sound: {
             setOnPlaybackStatusUpdate: jest.fn((callback) => {
-              setTimeout(() => {
-                callback({ isLoaded: true, didJustFinish: true });
-              }, 10);
-            }),
+            setTimeout(() => {
+              callback({ isLoaded: true, didJustFinish: true });
+            }, 0);
+          }),
             unloadAsync: jest.fn(() => Promise.resolve()),
             stopAsync: jest.fn(() => Promise.resolve()),
           },
@@ -86,7 +87,7 @@ describe('AudioManager Mute Property Tests', () => {
             // Enqueue and play
             manager.enqueue(clip, false);
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // Audio.Sound.createAsync should NOT be called when muted
             expect(mockCreateAsync).not.toHaveBeenCalled();
@@ -95,7 +96,7 @@ describe('AudioManager Mute Property Tests', () => {
             expect(playbackEnded).toBe(true);
           }
         ),
-        { numRuns: 100, timeout: 10000 }
+        propertyConfig({ numRuns: 100, timeout: 10000 })
       );
     });
 
@@ -125,13 +126,13 @@ describe('AudioManager Mute Property Tests', () => {
             // Enqueue and play
             manager.enqueue(clip, false);
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // Audio.Sound.createAsync SHOULD be called when not muted
             expect(mockCreateAsync).toHaveBeenCalled();
           }
         ),
-        { numRuns: 100, timeout: 10000 }
+        propertyConfig({ numRuns: 100, timeout: 10000 })
       );
     });
 
@@ -176,7 +177,7 @@ describe('AudioManager Mute Property Tests', () => {
 
             // Play
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // All clips that were in the final queue should have ended (even if muted)
             expect(endedClips.length).toBe(expectedClipsToPlay);
@@ -189,7 +190,7 @@ describe('AudioManager Mute Property Tests', () => {
             }
           }
         ),
-        { numRuns: 50, timeout: 10000 }
+        propertyConfig({ numRuns: 50, timeout: 10000 })
       );
     });
 
@@ -215,7 +216,7 @@ describe('AudioManager Mute Property Tests', () => {
             clips.forEach((clip) => manager.enqueue(clip, false));
 
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // Verify mute behavior
             if (isMuted) {
@@ -225,7 +226,7 @@ describe('AudioManager Mute Property Tests', () => {
             }
           }
         ),
-        { numRuns: 50, timeout: 10000 }
+        propertyConfig({ numRuns: 50, timeout: 10000 })
       );
     });
 
@@ -247,7 +248,7 @@ describe('AudioManager Mute Property Tests', () => {
             expect(manager.getMuted()).toBe(finalState);
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });

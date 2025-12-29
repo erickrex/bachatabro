@@ -4,6 +4,7 @@
  */
 
 import * as fc from 'fast-check';
+import { propertyConfig } from '../../../test/propertyConfig';
 import { AudioManager, AudioClip, AudioPriority } from '../AudioManager';
 
 // Mock expo-av
@@ -15,10 +16,10 @@ jest.mock('expo-av', () => ({
           sound: {
             setOnPlaybackStatusUpdate: jest.fn((callback) => {
               // Simulate immediate playback completion
-              setTimeout(() => {
-                callback({ isLoaded: true, didJustFinish: true });
-              }, 10);
-            }),
+            setTimeout(() => {
+              callback({ isLoaded: true, didJustFinish: true });
+            }, 0);
+          }),
             unloadAsync: jest.fn(() => Promise.resolve()),
             stopAsync: jest.fn(() => Promise.resolve()),
           },
@@ -32,6 +33,20 @@ describe('AudioManager Property Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
+
+  async function waitForPlaybackCompletion(
+    results: string[],
+    expectedCount: number,
+    timeoutMs: number = 200
+  ) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (results.length === expectedCount) {
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+  }
 
   // Increase timeout for property-based tests
   jest.setTimeout(15000);
@@ -80,14 +95,14 @@ describe('AudioManager Property Tests', () => {
 
             // Now play all clips
             await manager.play();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 25));
 
             // Verify clips were played in FIFO order
             const expectedOrder = clips.map((c) => c.id);
             expect(playedClips).toEqual(expectedOrder);
           }
         ),
-        { numRuns: 100, timeout: 10000 }
+        propertyConfig({ numRuns: 100, timeout: 10000 })
       );
     });
 
@@ -138,7 +153,7 @@ describe('AudioManager Property Tests', () => {
             expect(manager.peekNext()?.priority).toBe('high');
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
 
@@ -180,7 +195,7 @@ describe('AudioManager Property Tests', () => {
             manager.enqueue(firstClip, true);
 
             // Wait a bit for playback to start
-            await new Promise((resolve) => setTimeout(resolve, 5));
+            await new Promise((resolve) => setTimeout(resolve, 2));
 
             // Enqueue additional clips while first is playing (without auto-play)
             const additionalClips: AudioClip[] = additionalClipsData.map((data, index) => ({
@@ -191,9 +206,10 @@ describe('AudioManager Property Tests', () => {
             }));
 
             additionalClips.forEach((clip) => manager.enqueue(clip, false));
+            await manager.play();
 
             // Wait for all playback to complete
-            await new Promise((resolve) => setTimeout(resolve, 200));
+            await new Promise((resolve) => setTimeout(resolve, 5));
 
             // First clip should have started and completed
             expect(playbackStarted[0]).toBe(firstClip.id);
@@ -201,10 +217,11 @@ describe('AudioManager Property Tests', () => {
 
             // All clips should eventually play in order
             const allClips = [firstClip, ...additionalClips];
+            await waitForPlaybackCompletion(playbackEnded, allClips.length);
             expect(playbackEnded).toEqual(allClips.map((c) => c.id));
           }
         ),
-        { numRuns: 50, timeout: 10000 }
+        propertyConfig({ numRuns: 50, timeout: 10000 })
       );
     });
 
@@ -219,7 +236,7 @@ describe('AudioManager Property Tests', () => {
           expect(manager.getQueueLength()).toBe(0);
           expect(manager.getIsPlaying()).toBe(false);
         }),
-        { numRuns: 10 }
+        propertyConfig({ numRuns: 10 })
       );
     });
 
@@ -256,7 +273,7 @@ describe('AudioManager Property Tests', () => {
             expect(manager.peekNext()).toBeNull();
           }
         ),
-        { numRuns: 100 }
+        propertyConfig({ numRuns: 100 })
       );
     });
   });
