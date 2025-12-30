@@ -88,15 +88,21 @@ export class BackgroundAudioProcessor {
     // For normal/low priority, defer to after interactions
     return new Promise((resolve, reject) => {
       let timeoutId: NodeJS.Timeout | null = null;
+      let isCompleted = false;
+
       const executeOperation = () => {
         operation()
           .then((result) => {
+            if (isCompleted) return; // Already timed out
+            isCompleted = true;
             if (timeoutId) {
               clearTimeout(timeoutId);
             }
             resolve(result);
           })
           .catch((error) => {
+            if (isCompleted) return; // Already timed out
+            isCompleted = true;
             if (timeoutId) {
               clearTimeout(timeoutId);
             }
@@ -111,9 +117,18 @@ export class BackgroundAudioProcessor {
       // Set timeout for low priority tasks
       if (priority === 'low') {
         timeoutId = setTimeout(() => {
-          if (typeof (handle as any)?.cancel === 'function') {
-            (handle as any).cancel();
+          if (isCompleted) return; // Already completed
+          isCompleted = true;
+          
+          // Try to cancel the InteractionManager handle
+          if (handle && typeof (handle as any).cancel === 'function') {
+            try {
+              (handle as any).cancel();
+            } catch (error) {
+              // Ignore cancellation errors
+            }
           }
+          
           reject(new Error('Task timeout'));
         }, this.taskTimeoutMs);
       }

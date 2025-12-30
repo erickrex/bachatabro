@@ -380,6 +380,7 @@ export class RealTimeCoach {
 
   /**
    * Basic heuristics to detect network-related failures
+   * Returns true for connection failures, false for server/API errors
    */
   private isNetworkError(error: unknown): boolean {
     if (!error) {
@@ -387,19 +388,23 @@ export class RealTimeCoach {
     }
 
     const statusCode = (error as any)?.statusCode;
+    
+    // Status code 0 indicates network failure (no response from server)
+    if (typeof statusCode === 'number' && statusCode === 0) {
+      return true;
+    }
+
+    // 5xx errors are server errors, not network errors
     if (typeof statusCode === 'number' && statusCode >= 500) {
       return false;
     }
 
-    if (typeof statusCode === 'number' && (statusCode === 0 || statusCode === 503)) {
-      return true;
-    }
-
+    // Check error message for network-related keywords
     const message = typeof (error as any)?.message === 'string'
       ? (error as any).message.toLowerCase()
       : '';
 
-    return message.includes('network');
+    return message.includes('network') || message.includes('connection') || message.includes('timeout');
   }
 
   /**
