@@ -30,6 +30,9 @@ KEYPOINT_NAMES = [
     'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle'
 ]
 
+# Zero vector threshold - matches TypeScript ZERO_VECTOR_THRESHOLD
+EPSILON = 1e-9
+
 
 class YOLOv8PoseDetector:
     """Pose detector using YOLOv8s-pose model."""
@@ -152,7 +155,8 @@ def calculate_angle(p1: Dict, p2: Dict, p3: Dict) -> float:
     
     norm1 = np.linalg.norm(v1)
     norm2 = np.linalg.norm(v2)
-    if norm1 == 0 or norm2 == 0:
+    # Use threshold to avoid floating-point comparison issues
+    if norm1 <= EPSILON or norm2 <= EPSILON:
         return 0.0
     
     cos_angle = np.dot(v1, v2) / (norm1 * norm2)

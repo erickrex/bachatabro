@@ -30,6 +30,7 @@ DUPLICATED_JOINTS = {
     "rightLeg": "rightThigh",
 }
 
+# Zero vector threshold - matches TypeScript ZERO_VECTOR_THRESHOLD (1e-9)
 EPSILON = 1e-9
 
 

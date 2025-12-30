@@ -30,6 +30,14 @@ export const TRACKED_JOINTS: (keyof Angles)[] = [
   'rightLeg',
 ];
 
+// Compile-time check: ensure TRACKED_JOINTS includes all Angles keys
+type _AssertAllJointsTracked = typeof TRACKED_JOINTS extends ReadonlyArray<keyof Angles>
+  ? keyof Angles extends typeof TRACKED_JOINTS[number]
+    ? true
+    : never
+  : never;
+const _assertAllJointsTracked: _AssertAllJointsTracked = true;
+
 const JOINT_CONFIDENCE_THRESHOLD = 0.3;
 
 /**

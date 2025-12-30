@@ -32,7 +32,7 @@ function getJointConfidence(points: Point[]): number {
   return points.reduce((min, point) => {
     const confidence = point?.confidence ?? 0;
     return Math.min(min, confidence);
-  }, 1);
+  }, Infinity);
 }
 
 /**
