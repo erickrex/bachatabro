@@ -137,10 +137,11 @@ export default function GameScreen() {
   }, [frameScores]);
 
   // Handle frame capture from camera
-  const handleFrame = async (base64Image: string) => {
+  const handleFrame = async (base64Image: string, videoPositionMs: number) => {
     if (!poseData || !isPlaying || !poseServiceRef.current) return;
 
-    const frameIndex = currentFrame % poseData.frames.length;
+    // Calculate frame index from video position (synchronized with video playback)
+    const frameIndex = Math.floor((videoPositionMs / 1000) * poseData.fps) % poseData.frames.length;
     const referenceFrame = poseData.frames[frameIndex];
 
     if (!referenceFrame) return;
@@ -195,7 +196,7 @@ export default function GameScreen() {
       addFrameScore({
         score,
         matches,
-        timestamp: frameIndex / poseData.fps,
+        timestamp: videoPositionMs / 1000, // Use actual video position
         attemptedJoints,
         skippedJoints,
         skippedJointsList,

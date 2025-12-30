@@ -113,12 +113,21 @@ export class UnifiedPoseDetectionService {
         console.error('Real-time detection failed:', error);
         this.modeManager.recordFailure();
         
-        // Fallback to pre-computed if available
-        if (input.frameIndex !== undefined && input.songId) {
-          return await this.detectPrecomputed(input.frameIndex, input.songId);
-        }
-        
-        throw error;
+        // CRITICAL FIX: Do NOT fall back to pre-computed data for camera input!
+        // Falling back would make userPose === referencePose, causing 100% scores.
+        // Instead, return empty angles so the score calculator skips this frame.
+        return {
+          leftArm: 0,
+          rightArm: 0,
+          leftElbow: 0,
+          rightElbow: 0,
+          leftThigh: 0,
+          rightThigh: 0,
+          leftLeg: 0,
+          rightLeg: 0,
+          confidence: 0,
+          source: 'failed-detection',
+        };
       }
     }
 

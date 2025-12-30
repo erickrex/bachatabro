@@ -17,7 +17,7 @@ import { AVPlaybackStatus } from 'expo-av';
 
 export interface DualVideoViewProps {
   videoUri: string;
-  onFrame?: (base64Image: string) => void;
+  onFrame?: (base64Image: string, videoPositionMs: number) => void;
   isPlaying: boolean;
   onVideoEnd?: () => void;
   onVideoReady?: () => void;
@@ -36,6 +36,7 @@ export function DualVideoView({
   const isLandscape = width > height;
   const [videoReady, setVideoReady] = useState(false);
   const [cameraReady, setCameraReady] = useState(true); // Camera is ready immediately
+  const [videoPositionMs, setVideoPositionMs] = useState(0);
 
   // Notify parent when both video and camera are ready
   useEffect(() => {
@@ -49,9 +50,16 @@ export function DualVideoView({
   };
 
   const handlePlaybackUpdate = (status: AVPlaybackStatus) => {
-    // Can be used for synchronization or progress tracking
-    if (status.isLoaded) {
-      // Video is playing and loaded
+    // Track video position for frame synchronization
+    if (status.isLoaded && status.positionMillis !== undefined) {
+      setVideoPositionMs(status.positionMillis);
+    }
+  };
+
+  // Wrapper to pass video position to onFrame callback
+  const handleCameraFrame = (base64Image: string) => {
+    if (onFrame) {
+      onFrame(base64Image, videoPositionMs);
     }
   };
 
@@ -85,7 +93,7 @@ export function DualVideoView({
           isLandscape ? styles.landscapeHalf : styles.portraitHalf
         ]}>
           <CameraView
-            onFrame={onFrame}
+            onFrame={handleCameraFrame}
             isRecording={isPlaying}
             mirror={true}
             frameRate={10}
