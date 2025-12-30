@@ -15,6 +15,7 @@ export interface VideoPlayerProps {
   onEnd?: () => void;
   onReady?: () => void;
   onError?: (error: string) => void;
+  onVideoRef?: (ref: Video | null) => void;
 }
 
 export function VideoPlayer({
@@ -25,10 +26,16 @@ export function VideoPlayer({
   onEnd,
   onReady,
   onError,
+  onVideoRef,
 }: VideoPlayerProps) {
   const videoRef = useRef<Video>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+
+  // Expose video ref to parent
+  useEffect(() => {
+    onVideoRef?.(videoRef.current);
+  }, [onVideoRef]);
 
   useEffect(() => {
     if (videoRef.current) {

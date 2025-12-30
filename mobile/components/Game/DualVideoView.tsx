@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, useWindowDimensions } from 'react-native';
+import { Video } from 'expo-av';
 import { VideoPlayer } from '../Video/VideoPlayer';
 import { CameraView } from '../Camera/CameraView';
 import { AVPlaybackStatus } from 'expo-av';
@@ -22,6 +23,7 @@ export interface DualVideoViewProps {
   onVideoEnd?: () => void;
   onVideoReady?: () => void;
   onError?: (error: string) => void;
+  onVideoRef?: (ref: Video | null) => void;
 }
 
 export function DualVideoView({
@@ -31,6 +33,7 @@ export function DualVideoView({
   onVideoEnd,
   onVideoReady,
   onError,
+  onVideoRef,
 }: DualVideoViewProps) {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
@@ -81,6 +84,7 @@ export function DualVideoView({
             onEnd={onVideoEnd}
             onReady={handleVideoReady}
             onError={onError}
+            onVideoRef={onVideoRef}
           />
           <View style={styles.labelContainer}>
             <Text style={styles.label}>Reference</Text>

@@ -10,8 +10,9 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, Alert, ActivityIndicator, Text } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, StyleSheet, Alert, ActivityIndicator, Text, TouchableOpacity, BackHandler } from 'react-native';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { DualVideoView } from '@/components/Game/DualVideoView';
 import { ScoreDisplay } from '@/components/Game/ScoreDisplay';
 import { ModeIndicator } from '@/components/Game/ModeIndicator';
@@ -63,6 +64,54 @@ export default function GameScreen() {
   const poseServiceRef = useRef<UnifiedPoseDetectionService | null>(null);
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(Date.now());
+
+  // Handle back button press (Android) and cleanup
+  const handleGoBack = useCallback(() => {
+    setIsPlaying(false);
+    endGame();
+    router.back();
+  }, [endGame, router]);
+
+  // Handle Android hardware back button
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (isPlaying) {
+          // Pause first, then show confirmation
+          setIsPlaying(false);
+          Alert.alert(
+            'Exit Choreography?',
+            'Your progress will be lost.',
+            [
+              { text: 'Continue', onPress: () => setIsPlaying(true) },
+              { text: 'Exit', style: 'destructive', onPress: handleGoBack },
+            ]
+          );
+          return true; // Prevent default back behavior
+        }
+        handleGoBack();
+        return true;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [isPlaying, handleGoBack])
+  );
+
+  // Cleanup when screen loses focus
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // Stop playback when navigating away
+        setIsPlaying(false);
+      };
+    }, [])
+  );
+
+  // Toggle pause/play
+  const handleTogglePause = useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
 
   // Initialize pose detection service
   useEffect(() => {
@@ -264,31 +313,27 @@ export default function GameScreen() {
     Alert.alert('Error', 'Video playback error. Please try again.');
   };
 
-  // Handle voice input button press
-  // Requirements: 8.1, 11.6 - Voice input trigger and command handling
+  // Handle voice input button press (only when paused)
   const handleVoiceInput = useCallback(async () => {
     if (voiceCoachState.isListening) {
       voiceCoachActions.stopListening();
       // Process the transcript as a voice command if available
       if (voiceCoachState.currentTranscript) {
-        await voiceCoachActions.processVoiceCommand(voiceCoachState.currentTranscript);
+        const transcript = voiceCoachState.currentTranscript.toLowerCase();
+        // Handle pause-specific commands
+        if (transcript.includes('resume') || transcript.includes('play') || transcript.includes('continue')) {
+          setIsPlaying(true);
+        } else if (transcript.includes('exit') || transcript.includes('quit') || transcript.includes('back')) {
+          handleGoBack();
+        } else {
+          // Pass to general voice command processor
+          await voiceCoachActions.processVoiceCommand(voiceCoachState.currentTranscript);
+        }
       }
     } else {
       await voiceCoachActions.startListening();
     }
-  }, [voiceCoachState.isListening, voiceCoachState.currentTranscript, voiceCoachActions]);
-
-  // Handle mute toggle
-  const handleMuteToggle = useCallback(() => {
-    voiceCoachActions.setMuted(!voiceCoachState.isSpeaking);
-  }, [voiceCoachActions]);
-
-  // Determine voice indicator state
-  const getVoiceIndicatorState = (): 'idle' | 'listening' | 'speaking' => {
-    if (voiceCoachState.isSpeaking) return 'speaking';
-    if (voiceCoachState.isListening) return 'listening';
-    return 'idle';
-  };
+  }, [voiceCoachState.isListening, voiceCoachState.currentTranscript, voiceCoachActions, handleGoBack]);
 
   // Loading state
   if (status === 'loading' || !poseData) {
@@ -325,6 +370,65 @@ export default function GameScreen() {
         onError={handleError}
       />
 
+      {/* Playback Controls */}
+      <View style={styles.controlsContainer}>
+        {/* Back Button */}
+        <TouchableOpacity
+          style={styles.controlButton}
+          onPress={() => {
+            setIsPlaying(false);
+            Alert.alert(
+              'Exit Choreography?',
+              'Your progress will be lost.',
+              [
+                { text: 'Continue', onPress: () => setIsPlaying(true) },
+                { text: 'Exit', style: 'destructive', onPress: handleGoBack },
+              ]
+            );
+          }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+
+        {/* Pause/Play Button */}
+        <TouchableOpacity
+          style={[styles.controlButton, styles.pauseButton]}
+          onPress={handleTogglePause}
+        >
+          <Ionicons 
+            name={isPlaying ? 'pause' : 'play'} 
+            size={28} 
+            color="#fff" 
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Paused Overlay */}
+      {!isPlaying && status !== 'loading' && (
+        <View style={styles.pausedOverlay}>
+          <Text style={styles.pausedText}>PAUSED</Text>
+          <TouchableOpacity
+            style={styles.resumeButton}
+            onPress={() => setIsPlaying(true)}
+          >
+            <Ionicons name="play-circle" size={64} color="#9333ea" />
+          </TouchableOpacity>
+          
+          {/* Voice Input - Only available when paused */}
+          {voiceCoachState.isEnabled && voiceCoachState.isAvailable && (
+            <View style={styles.pausedVoiceContainer}>
+              <Text style={styles.pausedVoiceHint}>Say "resume" or "exit"</Text>
+              <VoiceButton
+                type="voice-input"
+                isListening={voiceCoachState.isListening}
+                onPress={handleVoiceInput}
+                disabled={!voiceCoachState.isAvailable}
+              />
+            </View>
+          )}
+        </View>
+      )}
+
       {/* Mode Indicator */}
       <ModeIndicator 
         mode={detectionMode} 
@@ -332,12 +436,12 @@ export default function GameScreen() {
         latency={detectionMode === DetectionMode.REAL_TIME ? latency : undefined}
       />
 
-      {/* Voice Coach Indicator - Requirements: 11.1, 11.2 */}
-      {voiceCoachState.isEnabled && (
+      {/* Voice Coach Speaking Indicator - Shows when coach gives real-time tips */}
+      {voiceCoachState.isEnabled && voiceCoachState.isSpeaking && isPlaying && (
         <View style={styles.voiceIndicatorContainer}>
           <VoiceIndicator
-            state={getVoiceIndicatorState()}
-            transcript={voiceCoachState.spokenText || voiceCoachState.currentTranscript}
+            state="speaking"
+            transcript={voiceCoachState.spokenText}
           />
         </View>
       )}
@@ -349,18 +453,6 @@ export default function GameScreen() {
           averageScore={averageScore}
           progress={progress}
         />
-      )}
-
-      {/* Voice Input Button - Requirements: 8.1, 11.6 */}
-      {voiceCoachState.isEnabled && isPlaying && (
-        <View style={styles.voiceButtonContainer}>
-          <VoiceButton
-            type="voice-input"
-            isListening={voiceCoachState.isListening}
-            onPress={handleVoiceInput}
-            disabled={!voiceCoachState.isAvailable}
-          />
-        </View>
       )}
     </View>
   );
@@ -382,18 +474,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9ca3af',
   },
+  controlsContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 20,
+  },
+  controlButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pauseButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(147, 51, 234, 0.8)',
+  },
+  pausedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 15,
+  },
+  pausedText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 24,
+    letterSpacing: 4,
+  },
+  resumeButton: {
+    padding: 8,
+  },
+  pausedVoiceContainer: {
+    marginTop: 32,
+    alignItems: 'center',
+  },
+  pausedVoiceHint: {
+    color: '#9ca3af',
+    fontSize: 14,
+    marginBottom: 12,
+  },
   voiceIndicatorContainer: {
     position: 'absolute',
-    top: 100,
+    top: 110,
     left: 16,
     right: 16,
     alignItems: 'flex-start',
-    zIndex: 10,
-  },
-  voiceButtonContainer: {
-    position: 'absolute',
-    bottom: 120,
-    right: 16,
     zIndex: 10,
   },
 });
