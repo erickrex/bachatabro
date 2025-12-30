@@ -39,6 +39,7 @@ describe('gameStore', () => {
       expect(result.current.finalScore).toBeNull();
       expect(result.current.poseData).toBeNull();
       expect(result.current.error).toBeNull();
+      expect(result.current.sessionCoverage).toBeNull();
     });
   });
 
@@ -135,6 +136,7 @@ describe('gameStore', () => {
       
       expect(result.current.status).toBe('finished');
       expect(result.current.finalScore).toBe(80); // (80 + 90 + 70) / 3
+      expect(result.current.sessionCoverage).not.toBeNull();
     });
 
     it('should handle end game with no scores', () => {
@@ -147,6 +149,7 @@ describe('gameStore', () => {
       
       expect(result.current.status).toBe('finished');
       expect(result.current.finalScore).toBe(0);
+      expect(result.current.sessionCoverage).toBeNull();
     });
   });
 

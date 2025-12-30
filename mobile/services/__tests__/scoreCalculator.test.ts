@@ -121,6 +121,7 @@ describe('scoreCalculator', () => {
       expect(result.matches.rightElbow).toBe(true);
       expect(result.attemptedJoints).toBeGreaterThan(0);
       expect(result.skippedJoints).toBeGreaterThan(0);
+      expect(result.skippedJointsList).toContain('leftArm');
     });
 
     it('should skip joints with low confidence metadata', () => {
@@ -150,6 +151,7 @@ describe('scoreCalculator', () => {
       const result = calculateFrameScore(userAngles, refAngles, 20);
       expect(result.matches.leftArm).toBeUndefined();
       expect(result.attemptedJoints).toBeLessThan(TRACKED_JOINTS.length);
+      expect(result.skippedJointsList).toContain('leftArm');
     });
   });
 

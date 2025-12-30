@@ -78,6 +78,7 @@ export class GeminiClient {
           weakestPart: request.weakestPart,
           totalFrames: request.totalFrames,
           language: request.language || 'en',
+          coverage: request.coverage,
         }
       );
 
@@ -142,7 +143,11 @@ export class GeminiClient {
       .replace('{songTitle}', request.songTitle)
       .replace('{score}', request.finalScore.toFixed(0));
 
-    const improvementTip = `Focus on your ${request.weakestPart || 'timing'} movements next time.`;
+    let improvementTip = `Focus on your ${request.weakestPart || 'timing'} movements next time.`;
+    if (request.coverage && request.coverage.skipFraction > 0.35) {
+      const joints = request.coverage.topSkippedJoints?.slice(0, 2).join(', ') || 'key joints';
+      improvementTip = `Tracking missed about ${(request.coverage.skipFraction * 100).toFixed(0)}% of joints (especially ${joints}). Adjust camera angle or lighting, then revisit your ${request.weakestPart || 'timing'}.`;
+    }
 
     return {
       review,

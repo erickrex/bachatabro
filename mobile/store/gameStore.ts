@@ -11,7 +11,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Song, FrameScore, PoseData } from '@/types/game';
+import { Song, FrameScore, PoseData, SessionCoverage } from '@/types/game';
 import { TRACKED_JOINTS } from '@/services/scoreCalculator';
 
 interface GameState {
@@ -46,6 +46,7 @@ const initialState = {
   finalScore: null,
   poseData: null,
   error: null,
+  sessionCoverage: null,
 };
 
 export const useGameStore = create<GameState>()(
@@ -105,20 +106,41 @@ export const useGameStore = create<GameState>()(
           { attempted: 0, skipped: 0 }
         );
 
+        const jointSkipCounts: Partial<Record<(typeof TRACKED_JOINTS)[number], number>> = {};
+        state.frameScores.forEach((frame) => {
+          frame.skippedJointsList?.forEach((joint) => {
+            jointSkipCounts[joint] = (jointSkipCounts[joint] || 0) + 1;
+          });
+        });
+
+        const topSkippedJoints = Object.entries(jointSkipCounts)
+          .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
+          .slice(0, 3)
+          .map(([joint]) => joint);
+
         const totalComparisons = coverage.attempted + coverage.skipped;
+        let sessionCoverage: SessionCoverage | null = null;
         if (totalComparisons > 0) {
           const skippedFraction = coverage.skipped / totalComparisons;
+          sessionCoverage = {
+            attemptedJoints: coverage.attempted,
+            skippedJoints: coverage.skipped,
+            skipFraction: Number(skippedFraction.toFixed(3)),
+            topSkippedJoints: topSkippedJoints as (typeof TRACKED_JOINTS)[number][],
+          };
           console.info('[PoseScore] Session joint coverage', {
             frames: state.frameScores.length,
             attemptedJoints: coverage.attempted,
             skippedJoints: coverage.skipped,
             skipFraction: Number(skippedFraction.toFixed(3)),
+            topSkippedJoints,
           });
         }
         
         return {
           status: 'finished',
           finalScore,
+          sessionCoverage,
         };
       }),
       

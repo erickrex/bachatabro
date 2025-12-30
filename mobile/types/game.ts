@@ -76,6 +76,14 @@ export interface FrameScore {
   timestamp: number;
   attemptedJoints?: number;
   skippedJoints?: number;
+  skippedJointsList?: (keyof Angles)[];
+}
+
+export interface SessionCoverage {
+  attemptedJoints: number;
+  skippedJoints: number;
+  skipFraction: number;
+  topSkippedJoints: (keyof Angles)[];
 }
 
 export interface GameState {
@@ -85,6 +93,7 @@ export interface GameState {
   frameScores: FrameScore[];
   finalScore: number | null;
   poseData: PoseData | null;
+  sessionCoverage: SessionCoverage | null;
 }
 
 export type GameStatus = GameState['status'];

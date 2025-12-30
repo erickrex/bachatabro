@@ -83,6 +83,13 @@ class CoachingTipResponse(BaseModel):
     targetBodyPart: str
 
 
+class CoverageSummary(BaseModel):
+    attemptedJoints: int = Field(..., ge=0)
+    skippedJoints: int = Field(..., ge=0)
+    skipFraction: float = Field(..., ge=0.0, le=1.0)
+    topSkippedJoints: list[str] = Field(default_factory=list)
+
+
 class PerformanceReviewRequest(BaseModel):
     songTitle: str = Field(..., min_length=1)
     songArtist: str = Field(..., min_length=1)
@@ -92,6 +99,7 @@ class PerformanceReviewRequest(BaseModel):
     weakestPart: Optional[str] = Field(default="timing")
     totalFrames: Optional[int] = Field(default=None, ge=0)
     language: Optional[str] = Field(default="en", pattern="^(en|es|de|ru)$")
+    coverage: Optional[CoverageSummary] = None
 
 
 class PerformanceReviewResponse(BaseModel):
@@ -213,6 +221,7 @@ async def generate_performance_review(request: Request, body: PerformanceReviewR
     strongest_part = body.strongestPart or "overall movement"
     weakest_part = body.weakestPart or "timing"
     language = body.language or "en"
+    coverage = body.coverage
     
     logger.info(f"Performance review request: {song_title}, score={final_score}, lang={language}")
     
@@ -225,6 +234,22 @@ async def generate_performance_review(request: Request, body: PerformanceReviewR
             comparison = f"You matched your personal best of {previous_best}%!"
         else:
             comparison = f"Your personal best is {previous_best}%."
+
+    coverage_block = ""
+    coverage_instruction = ""
+    coverage_guidance = "Only mention sensor reliability if the context naturally calls for it."
+    if coverage:
+        skip_percent = coverage.skipFraction * 100
+        frequent_skips = ", ".join(coverage.topSkippedJoints[:3]) if coverage.topSkippedJoints else "none"
+        coverage_block = f"""Pose Coverage:
+- Attempted joints: {coverage.attemptedJoints}
+- Skipped joints: {coverage.skippedJoints} (~{skip_percent:.1f}%)
+- Frequently skipped joints: {frequent_skips}"""
+        if coverage.skipFraction > 0.35:
+            coverage_instruction = "\nIf skip fraction exceeds 35%, reassure the dancer and mention adjusting camera angle or lighting before focusing on technique."
+            coverage_guidance = "Detector struggled; acknowledge it and encourage camera/lighting adjustments before coaching technique."
+        else:
+            coverage_guidance = "Mention how reliable the detector was and tie it into your advice."
     
     # Build prompt
     language_instruction = ""
@@ -241,13 +266,15 @@ Final Score: {final_score}%
 {comparison}
 Strongest body part: {strongest_part}
 Weakest body part: {weakest_part}
+{coverage_block if coverage_block else ''}
 
 Include:
 1. Congratulate on the score
 2. Mention comparison to previous best if available
 3. Highlight the strongest body part
 4. Give ONE tip for the weakest body part
-5. End with a motivating question or call-to-action{language_instruction}
+5. Pose coverage guidance: {coverage_guidance}
+6. End with a motivating question or call-to-action{coverage_instruction}{language_instruction}
 
 Respond with ONLY the review, nothing else."""
 
@@ -262,7 +289,12 @@ Respond with ONLY the review, nothing else."""
     review = truncate_to_word_limit(review, MAX_PERFORMANCE_REVIEW_WORDS)
     
     # Generate improvement tip
-    improvement_tip = f"Focus on your {weakest_part} movements next time."
+    if coverage and coverage.skipFraction > 0.35:
+        skip_percent = coverage.skipFraction * 100
+        joints = ", ".join(coverage.topSkippedJoints[:2]) if coverage.topSkippedJoints else "key joints"
+        improvement_tip = f"Pose tracking missed about {skip_percent:.0f}% of joints (especially {joints}). Adjust your camera angle or lighting, then focus on refining your {weakest_part}."
+    else:
+        improvement_tip = f"Focus on your {weakest_part} movements next time."
     
     return PerformanceReviewResponse(
         review=review,

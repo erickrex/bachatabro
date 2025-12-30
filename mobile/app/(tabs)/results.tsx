@@ -17,7 +17,7 @@ import { PerformanceReviewer, GameSession } from '@/services/voiceCoach';
 
 export default function ResultsScreen() {
   const router = useRouter();
-  const { finalScore, currentSong, reset, frameScores } = useGameStore();
+  const { finalScore, currentSong, reset, frameScores, sessionCoverage } = useGameStore();
   const [scoreSaved, setScoreSaved] = useState(false);
   const [previousBest, setPreviousBest] = useState<number | null>(null);
   const [reviewEnabled, setReviewEnabled] = useState(true);
@@ -66,6 +66,7 @@ export default function ResultsScreen() {
             finalScore,
             previousBest,
             frameScores,
+            coverage: sessionCoverage ?? undefined,
           };
 
           // Setup audio playback listener to display transcript

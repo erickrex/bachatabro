@@ -85,8 +85,28 @@ Bachata Bro is a dance coaching mobile app with two main components:
 # Authenticate
 gcloud auth login
 
-# Set project
-gcloud config set project YOUR_PROJECT_ID
+# Create new project (replace 'bachatabro' with your desired project ID)
+gcloud projects create bachatabro --name="Bachata Bro"
+
+# Set project as active
+gcloud config set project bachatabro
+
+# Fix quota project warning
+gcloud auth application-default set-quota-project bachatabro
+
+# Verify project is set correctly
+gcloud config get-value project
+gcloud projects describe bachatabro
+```
+
+### 1.1.1 Enable Billing (Required)
+
+```bash
+# List available billing accounts
+gcloud billing accounts list
+
+# Link billing to your project (replace BILLING_ACCOUNT_ID with actual ID)
+gcloud billing projects link bachatabro --billing-account=BILLING_ACCOUNT_ID
 ```
 
 ### 1.2 Enable Required APIs
@@ -102,17 +122,20 @@ gcloud services enable \
 ### 1.3 Store Secrets in Secret Manager
 
 ```bash
-# Store ElevenLabs API key
-echo -n "your_elevenlabs_api_key" | \
+# Store ElevenLabs API key (get from https://elevenlabs.io/app/settings/api-keys)
+echo -n "your_actual_elevenlabs_api_key" | \
   gcloud secrets create ELEVENLABS_API_KEY --data-file=-
 
-# Grant Cloud Run access to secrets
+# Grant Cloud Run access to secrets (automatically gets project number)
+PROJECT_NUMBER=$(gcloud projects describe bachatabro --format="value(projectNumber)")
 gcloud secrets add-iam-policy-binding ELEVENLABS_API_KEY \
-  --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 ```
 
-### 1.4 Create Dockerfile (if not exists)
+### 1.4 Prepare Backend Files
+
+#### 1.4.1 Create Dockerfile
 
 Create `backend/functions/Dockerfile`:
 
@@ -125,10 +148,11 @@ WORKDIR /app
 RUN pip install uv
 
 # Copy dependency files
-COPY pyproject.toml .
+COPY pyproject.toml ./
+COPY uv.lock ./
 
 # Install dependencies
-RUN uv pip install --system -e .
+RUN uv sync --no-dev
 
 # Copy source code
 COPY . .
@@ -137,7 +161,68 @@ COPY . .
 EXPOSE 8080
 
 # Run with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+```
+
+#### 1.4.2 Update .gitignore
+
+Edit `backend/functions/.gitignore` to allow `uv.lock` for Docker builds:
+
+```gitignore
+# UV
+.venv/
+# uv.lock  # Commented out - needed for Docker builds
+```
+
+#### 1.4.3 Create .dockerignore
+
+Create `backend/functions/.dockerignore`:
+
+```dockerignore
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+
+# Logs
+*.log
+
+# Hypothesis
+.hypothesis/
+```
+
+#### 1.4.4 Regenerate Lock File
+
+```bash
+cd backend/functions
+uv lock  # This updates the lock file with the correct project name
 ```
 
 ### 1.5 Deploy to Cloud Run
@@ -145,13 +230,16 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 ```bash
 cd backend/functions
 
-# Deploy with secrets
+# Set default region (optional but recommended)
+gcloud config set run/region europe-west1
+
+# Deploy with secrets (adjust region as needed)
 gcloud run deploy bachatabro-backend \
   --source . \
   --platform managed \
-  --region us-central1 \
+  --region europe-west1 \
   --allow-unauthenticated \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID,GOOGLE_CLOUD_LOCATION=us-central1,LOG_LEVEL=INFO,CORS_ORIGINS=*" \
+  --set-env-vars "GOOGLE_CLOUD_PROJECT=bachatabro,GOOGLE_CLOUD_LOCATION=europe-west1,LOG_LEVEL=INFO,CORS_ORIGINS=*" \
   --set-secrets "ELEVENLABS_API_KEY=ELEVENLABS_API_KEY:latest" \
   --memory 512Mi \
   --cpu 1 \
@@ -160,12 +248,20 @@ gcloud run deploy bachatabro-backend \
   --timeout 60
 ```
 
+**Expected Output:**
+```
+Service [bachatabro-backend] revision [bachatabro-backend-00001-555] has been deployed and is serving 100 percent of traffic.
+Service URL: https://bachatabro-backend-327513783440.europe-west1.run.app
+```
+
+**Save this URL** - you'll need it for mobile app configuration!
+
 ### 1.6 Verify Deployment
 
 ```bash
-# Get the service URL
+# Get the service URL (adjust region as needed)
 BACKEND_URL=$(gcloud run services describe bachatabro-backend \
-  --region us-central1 \
+  --region europe-west1 \
   --format 'value(status.url)')
 
 echo "Backend URL: $BACKEND_URL"
@@ -180,13 +276,20 @@ curl $BACKEND_URL/elevenlabs/health
 curl $BACKEND_URL/gemini/health
 ```
 
+**Expected responses:**
+- `/health`: `{"status": "healthy", "service": "bachatabro-backend"}`
+- `/elevenlabs/health`: `{"status": "healthy", "service": "elevenlabs"}`
+- `/gemini/health`: `{"status": "healthy", "service": "gemini"}`
+
 ### 1.7 Expected Backend URL Format
 
 ```
-https://bachatabro-backend-XXXXXXXXXX-uc.a.run.app
+https://bachatabro-backend-[PROJECT_NUMBER].[REGION].run.app
 ```
 
-Save this URL - you'll need it for the mobile app configuration.
+Example: `https://bachatabro-backend-327513783440.europe-west1.run.app`
+
+**Important:** Save this exact URL - you'll need it for the mobile app configuration!
 
 ---
 
@@ -206,13 +309,19 @@ eas login
 
 ### 2.2 Configure Backend URL
 
+#### 2.2.1 Create Local Environment File
+
 Create `mobile/.env` (for local development):
 
 ```bash
-EXPO_PUBLIC_BACKEND_URL=https://bachatabro-backend-XXXXXXXXXX-uc.a.run.app
+EXPO_PUBLIC_BACKEND_URL=https://bachatabro-backend-327513783440.europe-west1.run.app
 ```
 
-For EAS builds, set the environment variable in `eas.json`:
+**Replace with your actual backend URL from step 1.5**
+
+#### 2.2.2 Update EAS Configuration
+
+Update `mobile/eas.json` to include the backend URL in all build profiles:
 
 ```json
 {
@@ -225,19 +334,19 @@ For EAS builds, set the environment variable in `eas.json`:
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://bachatabro-backend-XXXXXXXXXX-uc.a.run.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://bachatabro-backend-327513783440.europe-west1.run.app"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://bachatabro-backend-XXXXXXXXXX-uc.a.run.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://bachatabro-backend-327513783440.europe-west1.run.app"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://bachatabro-backend-XXXXXXXXXX-uc.a.run.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://bachatabro-backend-327513783440.europe-west1.run.app"
       }
     }
   },
@@ -246,6 +355,8 @@ For EAS builds, set the environment variable in `eas.json`:
   }
 }
 ```
+
+**Replace all instances with your actual backend URL from step 1.5**
 
 ### 2.3 Build for Android
 
@@ -466,16 +577,36 @@ jobs:
 **"Service not configured" error**:
 ```bash
 # Check if secret is accessible
-gcloud run services describe bachatabro-backend --region us-central1
+gcloud run services describe bachatabro-backend --region europe-west1
 # Verify ELEVENLABS_API_KEY secret binding
 ```
+
+**"uv.lock needs to be updated" error during build**:
+```bash
+cd backend/functions
+uv lock  # Regenerate lock file
+# Then redeploy
+```
+
+**"file not found: uv.lock" error during build**:
+- Check that `uv.lock` is not in `.gitignore`
+- Ensure `.dockerignore` doesn't exclude `uv.lock`
+- Verify the file exists in `backend/functions/`
 
 **Vertex AI permission denied**:
 ```bash
 # Grant Vertex AI access to service account
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-  --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+PROJECT_NUMBER=$(gcloud projects describe bachatabro --format="value(projectNumber)")
+gcloud projects add-iam-policy-binding bachatabro \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --role="roles/aiplatform.user"
+```
+
+**Billing not enabled error**:
+```bash
+# Enable billing for the project
+gcloud billing accounts list
+gcloud billing projects link bachatabro --billing-account=BILLING_ACCOUNT_ID
 ```
 
 ### Mobile Issues
@@ -495,16 +626,36 @@ gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
 ## Quick Start Commands
 
 ```bash
+# === SETUP ===
+# 1. Create and configure project
+gcloud projects create bachatabro --name="Bachata Bro"
+gcloud config set project bachatabro
+gcloud auth application-default set-quota-project bachatabro
+
+# 2. Enable APIs
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com aiplatform.googleapis.com secretmanager.googleapis.com
+
+# 3. Store secrets
+echo -n "your_elevenlabs_api_key" | gcloud secrets create ELEVENLABS_API_KEY --data-file=-
+PROJECT_NUMBER=$(gcloud projects describe bachatabro --format="value(projectNumber)")
+gcloud secrets add-iam-policy-binding ELEVENLABS_API_KEY \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
 # === BACKEND ===
 cd backend/functions
+
+# Prepare files
+uv lock  # Regenerate lock file
 
 # Deploy backend
 gcloud run deploy bachatabro-backend \
   --source . \
-  --region us-central1 \
+  --region europe-west1 \
   --allow-unauthenticated \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=YOUR_PROJECT,GOOGLE_CLOUD_LOCATION=us-central1" \
-  --set-secrets "ELEVENLABS_API_KEY=ELEVENLABS_API_KEY:latest"
+  --set-env-vars "GOOGLE_CLOUD_PROJECT=bachatabro,GOOGLE_CLOUD_LOCATION=europe-west1,LOG_LEVEL=INFO,CORS_ORIGINS=*" \
+  --set-secrets "ELEVENLABS_API_KEY=ELEVENLABS_API_KEY:latest" \
+  --memory 512Mi --cpu 1 --min-instances 0 --max-instances 10 --timeout 60
 
 # === MOBILE ===
 cd mobile
@@ -517,11 +668,24 @@ eas build --platform android --profile preview
 
 ## Summary
 
-1. **Deploy backend first** to Google Cloud Run
-2. **Get the Cloud Run URL** from deployment output
-3. **Update mobile eas.json** with the backend URL
-4. **Build mobile app** with EAS
-5. **Test end-to-end** (backend smoke tests + Expo device session + pose coverage logs)
+1. **Create GCP project** and enable billing
+2. **Enable required APIs** (Cloud Run, Cloud Build, Vertex AI, Secret Manager)
+3. **Store ElevenLabs API key** in Secret Manager
+4. **Prepare backend files** (Dockerfile, .dockerignore, regenerate uv.lock)
+5. **Deploy backend** to Google Cloud Run
+6. **Get the Cloud Run URL** from deployment output
+7. **Update mobile configuration** (.env and eas.json) with backend URL
+8. **Build mobile app** with EAS
+9. **Test end-to-end** (backend health checks + mobile app functionality)
+
+## Common Pitfalls to Avoid
+
+1. **Don't ignore uv.lock** - It's needed for Docker builds
+2. **Always regenerate uv.lock** after renaming the project
+3. **Save the exact backend URL** - You'll need it multiple times
+4. **Test health endpoints** before proceeding to mobile deployment
+5. **Enable billing** - Cloud Run requires a billing account
+6. **Use consistent regions** - Keep backend and mobile configs aligned
 
 ---
 

@@ -16,7 +16,7 @@ import type {
   PerformanceReviewResponse,
   SupportedLanguage,
 } from '../../types/voiceCoach';
-import type { FrameScore, Song } from '../../types/game';
+import type { FrameScore, Song, SessionCoverage } from '../../types/game';
 import { getLanguageAppropriateVoice } from '../../config/voiceConfig';
 
 export interface GameSession {
@@ -26,6 +26,7 @@ export interface GameSession {
   frameScores: FrameScore[];
   strongestPart?: string;
   weakestPart?: string;
+  coverage?: SessionCoverage;
 }
 
 export interface PerformanceReview {
@@ -92,6 +93,7 @@ export class PerformanceReviewer {
         weakestPart: analysis.weakestPart,
         totalFrames: session.frameScores.length,
         language: this.language,
+        coverage: session.coverage,
       };
 
       const reviewResponse = await this.geminiClient.generatePerformanceReview(reviewRequest);

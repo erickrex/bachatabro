@@ -11,6 +11,7 @@ export interface FrameScore {
   timestamp: number;
   attemptedJoints?: number;
   skippedJoints?: number;
+  skippedJointsList?: (keyof Angles)[];
 }
 
 export type ScoreBreakdown = Record<keyof Angles, number>;
@@ -47,11 +48,13 @@ export function calculateFrameScore(
   matches: Partial<Record<keyof Angles, boolean>>;
   attemptedJoints: number;
   skippedJoints: number;
+  skippedJointsList: (keyof Angles)[];
 } {
   const matches: Partial<Record<keyof Angles, boolean>> = {};
   let matchCount = 0;
   let totalJoints = 0;
   let skippedJoints = 0;
+  const skippedJointNames: (keyof Angles)[] = [];
   
   for (const joint of TRACKED_JOINTS) {
     const userAngle = userAngles[joint];
@@ -65,6 +68,7 @@ export function calculateFrameScore(
       !Number.isFinite(refAngle)
     ) {
       skippedJoints++;
+      skippedJointNames.push(joint);
       continue;
     }
 
@@ -74,6 +78,7 @@ export function calculateFrameScore(
       userJointConfidence < JOINT_CONFIDENCE_THRESHOLD
     ) {
       skippedJoints++;
+      skippedJointNames.push(joint);
       continue;
     }
 
@@ -83,6 +88,7 @@ export function calculateFrameScore(
       refJointConfidence < JOINT_CONFIDENCE_THRESHOLD
     ) {
       skippedJoints++;
+      skippedJointNames.push(joint);
       continue;
     }
     
@@ -90,6 +96,7 @@ export function calculateFrameScore(
     // Skip them entirely so missing joints do not force 0% or 100% scores.
     if (userAngle === 0 || refAngle === 0) {
       skippedJoints++;
+      skippedJointNames.push(joint);
       continue;
     }
     
@@ -110,7 +117,7 @@ export function calculateFrameScore(
   // If no joints could be compared, return 0 instead of undefined behavior
   const score = totalJoints > 0 ? (matchCount / totalJoints) * 100 : 0;
   
-  return { score, matches, attemptedJoints: totalJoints, skippedJoints };
+  return { score, matches, attemptedJoints: totalJoints, skippedJoints, skippedJointsList: skippedJointNames };
 }
 
 /**
