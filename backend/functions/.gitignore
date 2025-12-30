@@ -27,7 +27,7 @@ wheels/
 
 # UV
 .venv/
-uv.lock
+# uv.lock  # Commented out - needed for Docker builds
 
 # IDE
 .idea/

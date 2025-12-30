@@ -160,6 +160,43 @@ def validate_stt_request(data: dict[str, Any]) -> ValidationResult:
             error_code=400,
             error_message=f"Unsupported language '{language}'. Supported: {', '.join(SUPPORTED_LANGUAGES)}"
         )
+
+    coverage = data.get("coverage")
+    if coverage is not None:
+        if not isinstance(coverage, dict):
+            return ValidationResult(
+                valid=False,
+                error_code=400,
+                error_message="Field 'coverage' must be an object"
+            )
+        skip_fraction = coverage.get("skipFraction")
+        attempted = coverage.get("attemptedJoints")
+        skipped = coverage.get("skippedJoints")
+        if not isinstance(skip_fraction, (int, float)) or not 0 <= float(skip_fraction) <= 1:
+            return ValidationResult(
+                valid=False,
+                error_code=400,
+                error_message="Field 'coverage.skipFraction' must be between 0 and 1"
+            )
+        if not isinstance(attempted, int) or attempted < 0:
+            return ValidationResult(
+                valid=False,
+                error_code=400,
+                error_message="Field 'coverage.attemptedJoints' must be a non-negative integer"
+            )
+        if not isinstance(skipped, int) or skipped < 0:
+            return ValidationResult(
+                valid=False,
+                error_code=400,
+                error_message="Field 'coverage.skippedJoints' must be a non-negative integer"
+            )
+        top_skipped = coverage.get("topSkippedJoints")
+        if top_skipped is not None and not isinstance(top_skipped, list):
+            return ValidationResult(
+                valid=False,
+                error_code=400,
+                error_message="Field 'coverage.topSkippedJoints' must be an array"
+            )
     
     return ValidationResult(valid=True)
 

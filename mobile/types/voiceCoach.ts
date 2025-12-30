@@ -1,6 +1,7 @@
 /**
  * Type definitions for Voice Coach integration
  */
+import type { SessionCoverage } from './game';
 
 // Supported languages for voice coaching
 export type SupportedLanguage = 'en' | 'es' | 'de' | 'ru';
@@ -72,6 +73,7 @@ export interface PerformanceReviewRequest {
   weakestPart?: string;
   totalFrames?: number;
   language?: SupportedLanguage;
+  coverage?: SessionCoverage;
 }
 
 export interface PerformanceReviewResponse {
