@@ -91,12 +91,14 @@ export function VoiceButtonGroup({
 }: VoiceButtonGroupProps): JSX.Element {
   return (
     <View style={styles.buttonGroup}>
-      <VoiceButton
-        type="mute"
-        isMuted={isMuted}
-        onPress={onMuteToggle}
-        disabled={disabled}
-      />
+      <View style={styles.buttonWrapper}>
+        <VoiceButton
+          type="mute"
+          isMuted={isMuted}
+          onPress={onMuteToggle}
+          disabled={disabled}
+        />
+      </View>
       <VoiceButton
         type="voice-input"
         isListening={isListening}
@@ -126,10 +128,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   icon: {
     fontSize: 20,
+    marginRight: 8,
   },
   label: {
     color: '#fff',
@@ -139,8 +141,10 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     flexDirection: 'row',
-    gap: 12,
     alignItems: 'center',
+  },
+  buttonWrapper: {
+    marginRight: 12,
   },
 });
 

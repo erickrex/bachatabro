@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, Alert, ActivityIndicator, Text, TouchableOpacity, BackHandler } from 'react-native';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { DualVideoView } from '@/components/Game/DualVideoView';
 import { ScoreDisplay } from '@/components/Game/ScoreDisplay';
@@ -73,40 +73,28 @@ export default function GameScreen() {
   }, [endGame, router]);
 
   // Handle Android hardware back button
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => {
-        if (isPlaying) {
-          // Pause first, then show confirmation
-          setIsPlaying(false);
-          Alert.alert(
-            'Exit Choreography?',
-            'Your progress will be lost.',
-            [
-              { text: 'Continue', onPress: () => setIsPlaying(true) },
-              { text: 'Exit', style: 'destructive', onPress: handleGoBack },
-            ]
-          );
-          return true; // Prevent default back behavior
-        }
-        handleGoBack();
-        return true;
-      };
-
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [isPlaying, handleGoBack])
-  );
-
-  // Cleanup when screen loses focus
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        // Stop playback when navigating away
+  useEffect(() => {
+    const onBackPress = () => {
+      if (isPlaying) {
+        // Pause first, then show confirmation
         setIsPlaying(false);
-      };
-    }, [])
-  );
+        Alert.alert(
+          'Exit Choreography?',
+          'Your progress will be lost.',
+          [
+            { text: 'Continue', onPress: () => setIsPlaying(true) },
+            { text: 'Exit', style: 'destructive', onPress: handleGoBack },
+          ]
+        );
+        return true; // Prevent default back behavior
+      }
+      handleGoBack();
+      return true;
+    };
+
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  }, [isPlaying, handleGoBack]);
 
   // Toggle pause/play
   const handleTogglePause = useCallback(() => {
@@ -480,7 +468,6 @@ const styles = StyleSheet.create({
     left: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     zIndex: 20,
   },
   controlButton: {
@@ -490,6 +477,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 12,
   },
   pauseButton: {
     width: 52,

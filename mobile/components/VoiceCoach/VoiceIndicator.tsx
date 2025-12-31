@@ -234,13 +234,13 @@ const styles = StyleSheet.create({
   speakingBars: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     height: 24,
   },
   speakingBar: {
     width: 4,
     height: 12,
     borderRadius: 2,
+    marginHorizontal: 2,
   },
   speakingBarTall: {
     height: 20,

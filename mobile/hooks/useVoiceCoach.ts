@@ -114,138 +114,160 @@ export function useVoiceCoach(): UseVoiceCoachReturn {
 
   // Initialize services on mount
   useEffect(() => {
-    // Initialize clients
-    elevenLabsClientRef.current = getElevenLabsClient();
-    geminiClientRef.current = getGeminiClient();
-    errorHandlerRef.current = getErrorHandler();
+    try {
+      // Initialize clients
+      elevenLabsClientRef.current = getElevenLabsClient();
+      geminiClientRef.current = getGeminiClient();
+      errorHandlerRef.current = getErrorHandler();
 
-    // Initialize audio manager
-    audioManagerRef.current = new AudioManager();
+      // Initialize audio manager
+      audioManagerRef.current = new AudioManager();
 
-    // Set up audio manager callbacks
-    audioManagerRef.current.onPlaybackStart = (clip) => {
-      setIsSpeaking(true);
-      setSpokenText(clip.text);
-    };
+      // Set up audio manager callbacks
+      if (audioManagerRef.current) {
+        audioManagerRef.current.onPlaybackStart = (clip) => {
+          setIsSpeaking(true);
+          setSpokenText(clip.text);
+        };
 
-    audioManagerRef.current.onPlaybackEnd = () => {
-      setIsSpeaking(false);
-    };
+        audioManagerRef.current.onPlaybackEnd = () => {
+          setIsSpeaking(false);
+        };
+      }
 
-    // Initialize battery adapter
-    batteryAdapterRef.current = new BatteryAdapter({
-      normalCooldownMs: COACHING_COOLDOWNS[storeSettings.coachingFrequency],
-    });
+      // Initialize battery adapter
+      batteryAdapterRef.current = new BatteryAdapter({
+        normalCooldownMs: COACHING_COOLDOWNS[storeSettings.coachingFrequency] || 3000,
+      });
 
-    // Initialize real-time coach
-    realTimeCoachRef.current = new RealTimeCoach({
-      geminiClient: geminiClientRef.current,
-      elevenLabsClient: elevenLabsClientRef.current,
-      audioManager: audioManagerRef.current,
-      language: storeSettings.language,
-      cooldownMs: COACHING_COOLDOWNS[storeSettings.coachingFrequency],
-      enabled: storeSettings.realTimeCoachingEnabled && storeSettings.enabled,
-      voiceId: storeSettings.voiceId,
-      batteryAdapter: batteryAdapterRef.current,
-    });
+      // Initialize real-time coach (only if dependencies are available)
+      if (geminiClientRef.current && elevenLabsClientRef.current && audioManagerRef.current) {
+        realTimeCoachRef.current = new RealTimeCoach({
+          geminiClient: geminiClientRef.current,
+          elevenLabsClient: elevenLabsClientRef.current,
+          audioManager: audioManagerRef.current,
+          language: storeSettings.language,
+          cooldownMs: COACHING_COOLDOWNS[storeSettings.coachingFrequency] || 3000,
+          enabled: storeSettings.realTimeCoachingEnabled && storeSettings.enabled,
+          voiceId: storeSettings.voiceId,
+          batteryAdapter: batteryAdapterRef.current,
+        });
 
-    // Initialize performance reviewer
-    performanceReviewerRef.current = new PerformanceReviewer({
-      geminiClient: geminiClientRef.current,
-      elevenLabsClient: elevenLabsClientRef.current,
-      audioManager: audioManagerRef.current,
-      language: storeSettings.language,
-      voiceId: storeSettings.voiceId,
-      enabled: storeSettings.performanceReviewsEnabled && storeSettings.enabled,
-    });
+        // Initialize performance reviewer
+        performanceReviewerRef.current = new PerformanceReviewer({
+          geminiClient: geminiClientRef.current,
+          elevenLabsClient: elevenLabsClientRef.current,
+          audioManager: audioManagerRef.current,
+          language: storeSettings.language,
+          voiceId: storeSettings.voiceId,
+          enabled: storeSettings.performanceReviewsEnabled && storeSettings.enabled,
+        });
 
-    // Initialize voice navigation
-    const routerAdapter: Router = {
-      push: (route) => {
-        if (typeof route === 'string') {
-          router.push(route as any);
-        } else {
-          router.push(route as any);
+        // Initialize voice navigation
+        const routerAdapter: Router = {
+          push: (route) => {
+            if (typeof route === 'string') {
+              router.push(route as any);
+            } else {
+              router.push(route as any);
+            }
+          },
+        };
+
+        voiceNavigationRef.current = new VoiceNavigation({
+          elevenLabsClient: elevenLabsClientRef.current,
+          audioManager: audioManagerRef.current,
+          router: routerAdapter,
+          language: storeSettings.language,
+          voiceId: storeSettings.voiceId,
+        });
+
+        // Initialize conversation agent
+        conversationAgentRef.current = new ConversationAgent({
+          geminiClient: geminiClientRef.current,
+          elevenLabsClient: elevenLabsClientRef.current,
+          audioManager: audioManagerRef.current,
+          language: storeSettings.language,
+          voiceId: storeSettings.voiceId,
+        });
+
+        // Set up conversation agent callbacks
+        if (conversationAgentRef.current) {
+          conversationAgentRef.current.onConversationStart = () => {
+            setIsConversationActive(true);
+          };
+
+          conversationAgentRef.current.onConversationEnd = () => {
+            setIsConversationActive(false);
+          };
         }
-      },
-    };
+      }
 
-    voiceNavigationRef.current = new VoiceNavigation({
-      elevenLabsClient: elevenLabsClientRef.current,
-      audioManager: audioManagerRef.current,
-      router: routerAdapter,
-      language: storeSettings.language,
-      voiceId: storeSettings.voiceId,
-    });
+      // Set up error handler callbacks
+      if (errorHandlerRef.current) {
+        errorHandlerRef.current.onStatusChange = (status) => {
+          setIsAvailable(status !== 'disabled');
+        };
 
-    // Initialize conversation agent
-    conversationAgentRef.current = new ConversationAgent({
-      geminiClient: geminiClientRef.current,
-      elevenLabsClient: elevenLabsClientRef.current,
-      audioManager: audioManagerRef.current,
-      language: storeSettings.language,
-      voiceId: storeSettings.voiceId,
-    });
-
-    // Set up conversation agent callbacks
-    conversationAgentRef.current.onConversationStart = () => {
-      setIsConversationActive(true);
-    };
-
-    conversationAgentRef.current.onConversationEnd = () => {
-      setIsConversationActive(false);
-    };
-
-    // Set up error handler callbacks
-    errorHandlerRef.current.onStatusChange = (status) => {
-      setIsAvailable(status !== 'disabled');
-    };
-
-    errorHandlerRef.current.onNotification = (message) => {
-      setError(message);
-    };
+        errorHandlerRef.current.onNotification = (message) => {
+          setError(message);
+        };
+      }
+    } catch (err) {
+      console.error('[useVoiceCoach] Error initializing services:', err);
+      setError('Voice coach initialization failed');
+      setIsAvailable(false);
+    }
 
     // Cleanup on unmount
     return () => {
-      conversationAgentRef.current?.endConversation();
+      try {
+        conversationAgentRef.current?.endConversation();
+      } catch (err) {
+        console.error('[useVoiceCoach] Error during cleanup:', err);
+      }
     };
   }, []);
 
   // Sync settings changes to services
   useEffect(() => {
-    if (realTimeCoachRef.current) {
-      realTimeCoachRef.current.setEnabled(
-        storeSettings.realTimeCoachingEnabled && storeSettings.enabled && !storeSettings.muted
-      );
-      realTimeCoachRef.current.setLanguage(storeSettings.language);
-      realTimeCoachRef.current.setVoiceId(storeSettings.voiceId);
-      realTimeCoachRef.current.setCooldown(COACHING_COOLDOWNS[storeSettings.coachingFrequency]);
-    }
+    try {
+      if (realTimeCoachRef.current) {
+        realTimeCoachRef.current.setEnabled(
+          storeSettings.realTimeCoachingEnabled && storeSettings.enabled && !storeSettings.muted
+        );
+        realTimeCoachRef.current.setLanguage(storeSettings.language);
+        realTimeCoachRef.current.setVoiceId(storeSettings.voiceId);
+        realTimeCoachRef.current.setCooldown(COACHING_COOLDOWNS[storeSettings.coachingFrequency] || 3000);
+      }
 
-    if (performanceReviewerRef.current) {
-      performanceReviewerRef.current.setEnabled(
-        storeSettings.performanceReviewsEnabled && storeSettings.enabled && !storeSettings.muted
-      );
-      performanceReviewerRef.current.setLanguage(storeSettings.language);
-      performanceReviewerRef.current.setVoiceId(storeSettings.voiceId);
-    }
+      if (performanceReviewerRef.current) {
+        performanceReviewerRef.current.setEnabled(
+          storeSettings.performanceReviewsEnabled && storeSettings.enabled && !storeSettings.muted
+        );
+        performanceReviewerRef.current.setLanguage(storeSettings.language);
+        performanceReviewerRef.current.setVoiceId(storeSettings.voiceId);
+      }
 
-    if (voiceNavigationRef.current) {
-      voiceNavigationRef.current.setLanguage(storeSettings.language);
-      voiceNavigationRef.current.setVoiceId(storeSettings.voiceId);
-    }
+      if (voiceNavigationRef.current) {
+        voiceNavigationRef.current.setLanguage(storeSettings.language);
+        voiceNavigationRef.current.setVoiceId(storeSettings.voiceId);
+      }
 
-    if (conversationAgentRef.current) {
-      conversationAgentRef.current.setLanguage(storeSettings.language);
-      conversationAgentRef.current.setVoiceId(storeSettings.voiceId);
-    }
+      if (conversationAgentRef.current) {
+        conversationAgentRef.current.setLanguage(storeSettings.language);
+        conversationAgentRef.current.setVoiceId(storeSettings.voiceId);
+      }
 
-    if (audioManagerRef.current) {
-      audioManagerRef.current.setMuted(storeSettings.muted);
-    }
+      if (audioManagerRef.current) {
+        audioManagerRef.current.setMuted(storeSettings.muted);
+      }
 
-    if (batteryAdapterRef.current) {
-      batteryAdapterRef.current.setNormalCooldown(COACHING_COOLDOWNS[storeSettings.coachingFrequency]);
+      if (batteryAdapterRef.current) {
+        batteryAdapterRef.current.setNormalCooldown(COACHING_COOLDOWNS[storeSettings.coachingFrequency] || 3000);
+      }
+    } catch (err) {
+      console.error('[useVoiceCoach] Error syncing settings:', err);
     }
   }, [
     storeSettings.enabled,
