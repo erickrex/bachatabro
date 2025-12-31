@@ -92,6 +92,39 @@ export class VoiceNavigation {
   public parseCommand(transcript: string): VoiceCommand {
     const normalized = transcript.toLowerCase().trim();
 
+    // Check for play song by position (first, second, third, etc.)
+    const positionPatterns = [
+      /^play\s+(the\s+)?(first|1st)\s+(song)?$/i,
+      /^play\s+(the\s+)?(second|2nd)\s+(song)?$/i,
+      /^play\s+(the\s+)?(third|3rd)\s+(song)?$/i,
+      /^play\s+song\s+(one|1)$/i,
+      /^play\s+song\s+(two|2)$/i,
+      /^play\s+song\s+(three|3)$/i,
+    ];
+
+    // Map position words to indices
+    const positionMap: Record<string, number> = {
+      'first': 0, '1st': 0, 'one': 0, '1': 0,
+      'second': 1, '2nd': 1, 'two': 1, '2': 1,
+      'third': 2, '3rd': 2, 'three': 2, '3': 2,
+    };
+
+    // Check for position-based play commands
+    for (const [position, index] of Object.entries(positionMap)) {
+      const patterns = [
+        new RegExp(`^play\\s+(the\\s+)?${position}(\\s+song)?$`, 'i'),
+        new RegExp(`^play\\s+song\\s+${position}$`, 'i'),
+      ];
+      
+      for (const pattern of patterns) {
+        if (pattern.test(normalized)) {
+          if (index < SONGS.length) {
+            return { type: 'play_song', songName: SONGS[index].title };
+          }
+        }
+      }
+    }
+
     // Check for play song command
     // Patterns: "play [song]", "reproducir [song]", "spiele [song]", "играть [song]"
     const playPatterns = [
