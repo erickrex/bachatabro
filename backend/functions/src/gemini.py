@@ -327,7 +327,7 @@ def _call_gemini(prompt: str) -> str | None:
         
         aiplatform.init(project=project_id, location=location)
         
-        model = GenerativeModel("gemini-1.5-flash")
+        model = GenerativeModel("gemini-2.0-flash-001")
         response = model.generate_content(prompt)
         
         return response.text.strip()

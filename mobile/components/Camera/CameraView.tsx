@@ -3,9 +3,9 @@
  * Captures frames from the front camera for pose detection
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { CameraView as ExpoCameraView, useCameraPermissions, CameraType } from 'expo-camera';
+import { CameraView as ExpoCameraView, useCameraPermissions } from 'expo-camera';
 
 interface CameraViewProps {
   onFrame?: (base64Image: string) => void;
@@ -31,6 +31,26 @@ export function CameraView({
     }
   }, [permission]);
 
+  // Capture a single frame
+  const captureFrame = useCallback(async () => {
+    if (!cameraRef.current) return null;
+    
+    try {
+      // expo-camera v17+ uses takePictureAsync on the ref
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+        skipProcessing: true,
+      });
+      return photo?.base64 || null;
+    } catch (error) {
+      // If takePictureAsync fails, the camera might not support it
+      // This can happen on some devices or in certain states
+      console.warn('Frame capture not available:', error);
+      return null;
+    }
+  }, []);
+
   // Frame capture interval
   useEffect(() => {
     if (!isRecording || !isReady || !onFrame) {
@@ -39,6 +59,7 @@ export function CameraView({
 
     const intervalMs = 1000 / frameRate;
     let isCapturing = false;
+    let frameCount = 0;
 
     const interval = setInterval(async () => {
       // Skip if already capturing to avoid queue buildup
@@ -48,21 +69,17 @@ export function CameraView({
 
       try {
         isCapturing = true;
-
-        if (cameraRef.current) {
-          const photo = await cameraRef.current.takePictureAsync({
-            base64: true,
-            quality: 0.5,
-            skipProcessing: true, // Faster capture
-            shutterSound: false, // Disable shutter sound
-          });
-
-          if (photo?.base64) {
-            onFrame(photo.base64);
-          }
+        const base64 = await captureFrame();
+        
+        if (base64) {
+          onFrame(base64);
+          frameCount++;
         }
       } catch (error) {
-        console.error('Frame capture error:', error);
+        // Only log every 10th error to avoid spam
+        if (frameCount % 10 === 0) {
+          console.error('Frame capture error:', error);
+        }
       } finally {
         isCapturing = false;
       }
@@ -71,7 +88,7 @@ export function CameraView({
     return () => {
       clearInterval(interval);
     };
-  }, [isRecording, isReady, onFrame, frameRate]);
+  }, [isRecording, isReady, onFrame, frameRate, captureFrame]);
 
   // Handle permission states
   if (permission === null) {

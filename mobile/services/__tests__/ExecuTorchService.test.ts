@@ -20,6 +20,24 @@ jest.mock('react-native', () => ({
   },
 }));
 
+// Mock expo-file-system
+jest.mock('expo-file-system', () => ({
+  documentDirectory: 'file:///mock/documents/',
+  getInfoAsync: jest.fn().mockResolvedValue({ exists: true }),
+  makeDirectoryAsync: jest.fn().mockResolvedValue(undefined),
+  copyAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
+// Mock expo-asset
+jest.mock('expo-asset', () => ({
+  Asset: {
+    fromModule: jest.fn().mockReturnValue({
+      downloadAsync: jest.fn().mockResolvedValue(undefined),
+      localUri: 'file:///mock/asset/pose.pte',
+    }),
+  },
+}));
+
 describe('ExecuTorchService', () => {
   let service: ExecuTorchService;
   const mockModule = NativeModules.ExecuTorchModule;
@@ -41,25 +59,29 @@ describe('ExecuTorchService', () => {
       expect(service.isReady()).toBe(true);
     });
 
-    it('should throw error if module not available', async () => {
-      // This test verifies the error handling when module is not available
+    it('should handle module not available gracefully', async () => {
+      // This test verifies the graceful handling when module is not available
       // Since the module is imported at the top level, we test the error path
       // by making loadModel fail with a specific error
       mockModule.loadModel.mockRejectedValue(new Error('Native module not found'));
 
       const serviceWithoutModule = new ExecuTorchService();
       
-      await expect(serviceWithoutModule.initialize('model.pte')).rejects.toThrow(
-        'ExecuTorch initialization failed'
-      );
+      // Should not throw - gracefully handles the error
+      await serviceWithoutModule.initialize('model.pte');
+      
+      // Service should not be ready since initialization failed
+      expect(serviceWithoutModule.isReady()).toBe(false);
     });
 
-    it('should throw error if model loading fails', async () => {
+    it('should handle model loading failure gracefully', async () => {
       mockModule.loadModel.mockRejectedValue(new Error('Model not found'));
 
-      await expect(service.initialize('invalid.pte')).rejects.toThrow(
-        'ExecuTorch initialization failed'
-      );
+      // Should not throw - gracefully handles the error
+      await service.initialize('invalid.pte');
+      
+      // Service should not be ready since initialization failed
+      expect(service.isReady()).toBe(false);
     });
   });
 

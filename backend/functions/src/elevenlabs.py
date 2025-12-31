@@ -28,25 +28,39 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/elevenlabs", tags=["elevenlabs"])
 
 # Voice configuration by language
+# Using actual ElevenLabs voice IDs (not display names)
+# See: https://elevenlabs.io/docs/api-reference/voices
 VOICE_CONFIG = {
     "en": {
-        "default": "Rachel",
-        "available": ["Rachel", "Drew", "Clyde", "Paul", "Domi"],
+        "default": "21m00Tcm4TlvDq8ikWAM",  # Rachel
+        "available": {
+            "Rachel": "21m00Tcm4TlvDq8ikWAM",
+            "Drew": "29vD33N1CtxCmqQRPOHJ",
+            "Clyde": "2EiwWnXFnvU5JabPnv8n",
+            "Paul": "5Q0t7uMcjvnagumLfvZi",
+            "Domi": "AZnzlk1XvdvUeBnXmlld",
+        },
         "model": "eleven_turbo_v2",
     },
     "es": {
-        "default": "Laura",
-        "available": ["Laura", "Pablo", "Sofia"],
+        "default": "XrExE9yKIg1WjnnlVkGX",  # Laura (multilingual)
+        "available": {
+            "Laura": "XrExE9yKIg1WjnnlVkGX",
+        },
         "model": "eleven_multilingual_v2",
     },
     "de": {
-        "default": "Hans",
-        "available": ["Hans", "Greta", "Klaus"],
+        "default": "ErXwobaYiN019PkySvjV",  # Antoni (multilingual, works for German)
+        "available": {
+            "Antoni": "ErXwobaYiN019PkySvjV",
+        },
         "model": "eleven_multilingual_v2",
     },
     "ru": {
-        "default": "Natasha",
-        "available": ["Natasha", "Ivan", "Olga"],
+        "default": "ErXwobaYiN019PkySvjV",  # Antoni (multilingual, works for Russian)
+        "available": {
+            "Antoni": "ErXwobaYiN019PkySvjV",
+        },
         "model": "eleven_multilingual_v2",
     },
 }
@@ -108,8 +122,19 @@ async def text_to_speech(request: Request, body: TTSRequest):
         raise HTTPException(status_code=validation.error_code, detail=validation.error_message)
     
     language = body.language or "en"
-    voice_id = body.voiceId or VOICE_CONFIG[language]["default"]
-    model_id = VOICE_CONFIG[language]["model"]
+    config = VOICE_CONFIG.get(language, VOICE_CONFIG["en"])
+    
+    # If voiceId provided, use it directly; otherwise use default
+    # voiceId can be either a voice ID or a voice name
+    voice_id = body.voiceId
+    if not voice_id:
+        voice_id = config["default"]
+    elif voice_id in config.get("available", {}):
+        # Map voice name to ID if it's a name
+        voice_id = config["available"][voice_id]
+    # Otherwise assume it's already a valid voice ID
+    
+    model_id = config["model"]
     
     logger.info(f"TTS request: {len(body.text)} chars, voice={voice_id}, lang={language}")
     
@@ -227,9 +252,24 @@ async def get_voices(language: Optional[str] = None):
     if language:
         if language not in VOICE_CONFIG:
             raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
-        return {language: VOICE_CONFIG[language]}
+        config = VOICE_CONFIG[language]
+        return {
+            language: {
+                "default": config["default"],
+                "available": list(config.get("available", {}).keys()),
+                "model": config["model"],
+            }
+        }
     
-    return VOICE_CONFIG
+    # Return all languages with voice names (not IDs) for client display
+    result = {}
+    for lang, config in VOICE_CONFIG.items():
+        result[lang] = {
+            "default": config["default"],
+            "available": list(config.get("available", {}).keys()),
+            "model": config["model"],
+        }
+    return result
 
 
 @router.get("/health")

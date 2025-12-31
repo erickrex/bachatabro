@@ -7,7 +7,7 @@
 
 import { NativeModules, Platform } from 'react-native';
 import { Asset } from 'expo-asset';
-import { Paths, File, Directory } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system';
 import { PoseResult } from '@/types/detection';
 
 const { ExecuTorchModule } = NativeModules;
@@ -22,7 +22,9 @@ export class ExecuTorchService {
    */
   async initialize(modelFileName: string): Promise<void> {
     if (!ExecuTorchModule) {
-      throw new Error('ExecuTorchModule not available. Native module not linked.');
+      console.warn('ExecuTorchModule not available. Native module not linked. Using fallback mode.');
+      // Don't throw - allow the app to continue with pre-computed mode
+      return;
     }
 
     try {
@@ -35,7 +37,8 @@ export class ExecuTorchService {
       console.log('ExecuTorch model loaded successfully from:', modelPath);
     } catch (error) {
       console.error('Failed to initialize ExecuTorch:', error);
-      throw new Error(`ExecuTorch initialization failed: ${error}`);
+      // Don't throw - allow the app to continue with pre-computed mode
+      console.warn('ExecuTorch initialization failed, using pre-computed mode');
     }
   }
 
@@ -44,20 +47,21 @@ export class ExecuTorchService {
    * ExecuTorch requires a file path, not a bundled asset
    */
   private async extractModelToFilesystem(modelFileName: string): Promise<string> {
-    // Use new expo-file-system v19 API
-    const modelsDir = new Directory(Paths.document, 'models');
-    const destFile = new File(modelsDir, modelFileName);
+    const modelsDir = `${FileSystem.documentDirectory}models/`;
+    const destPath = `${modelsDir}${modelFileName}`;
     
     // Check if model already exists on filesystem
-    if (destFile.exists) {
-      console.log('Model already extracted at:', destFile.uri);
+    const fileInfo = await FileSystem.getInfoAsync(destPath);
+    if (fileInfo.exists) {
+      console.log('Model already extracted at:', destPath);
       // Return path without file:// prefix for native module
-      return destFile.uri.replace('file://', '');
+      return destPath.replace('file://', '');
     }
 
     // Create models directory if needed
-    if (!modelsDir.exists) {
-      await modelsDir.create();
+    const dirInfo = await FileSystem.getInfoAsync(modelsDir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(modelsDir, { intermediates: true });
     }
 
     // Load model from bundled assets
@@ -69,12 +73,14 @@ export class ExecuTorchService {
     }
 
     // Copy from asset to destination
-    const sourceFile = new File(modelAsset.localUri);
-    await sourceFile.copy(destFile);
+    await FileSystem.copyAsync({
+      from: modelAsset.localUri,
+      to: destPath,
+    });
 
-    console.log('Model extracted to:', destFile.uri);
+    console.log('Model extracted to:', destPath);
     // Return path without file:// prefix for native module
-    return destFile.uri.replace('file://', '');
+    return destPath.replace('file://', '');
   }
 
   /**
