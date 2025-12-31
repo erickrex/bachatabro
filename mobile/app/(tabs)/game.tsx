@@ -16,16 +16,30 @@ import { Ionicons } from '@expo/vector-icons';
 import { DualVideoView } from '@/components/Game/DualVideoView';
 import { ScoreDisplay } from '@/components/Game/ScoreDisplay';
 import { ModeIndicator } from '@/components/Game/ModeIndicator';
-import { VoiceIndicator, VoiceButton } from '@/components/VoiceCoach';
 import { useGameStore } from '@/store/gameStore';
-import { useVoiceCoach } from '@/hooks/useVoiceCoach';
 import { loadPoseData, loadVideo } from '@/services/assetLoader';
 import { calculateFrameScore } from '@/services/scoreCalculator';
 import { UnifiedPoseDetectionService } from '@/services/poseDetection';
 import { PoseData, Song } from '@/types/game';
 import { DetectionMode } from '@/types/detection';
-import { PoseAnalysis } from '@/types/voiceCoach';
 import { SONGS } from '@/components/Song';
+
+// Import PoseAnalysis type for voice coaching
+import type { PoseAnalysis } from '@/types/voiceCoach';
+
+// Lazy load voice coach components to prevent initialization errors
+let VoiceIndicator: any = null;
+let VoiceButton: any = null;
+let useVoiceCoach: any = null;
+
+try {
+  const VoiceCoachComponents = require('@/components/VoiceCoach');
+  VoiceIndicator = VoiceCoachComponents.VoiceIndicator;
+  VoiceButton = VoiceCoachComponents.VoiceButton;
+  useVoiceCoach = require('@/hooks/useVoiceCoach').useVoiceCoach;
+} catch (e) {
+  console.warn('Voice coach components not available:', e);
+}
 
 export default function GameScreen() {
   const { songId } = useLocalSearchParams<{ songId: string }>();
@@ -43,8 +57,22 @@ export default function GameScreen() {
     frameScores,
   } = useGameStore();
 
-  // Voice coach hook
-  const [voiceCoachState, voiceCoachActions] = useVoiceCoach();
+  // Voice coach hook - safely initialize
+  const voiceCoachResult = useVoiceCoach ? useVoiceCoach() : null;
+  const voiceCoachState = voiceCoachResult?.[0] || {
+    isEnabled: false,
+    isSpeaking: false,
+    isListening: false,
+    isAvailable: false,
+    currentTranscript: '',
+    spokenText: '',
+  };
+  const voiceCoachActions = voiceCoachResult?.[1] || {
+    onPoseAnalysis: async () => {},
+    startListening: async () => {},
+    stopListening: () => {},
+    processVoiceCommand: async () => {},
+  };
 
   // Local state
   const [poseData, setPoseData] = useState<PoseData | null>(null);
@@ -403,7 +431,7 @@ export default function GameScreen() {
           </TouchableOpacity>
           
           {/* Voice Input - Only available when paused */}
-          {voiceCoachState.isEnabled && voiceCoachState.isAvailable && (
+          {VoiceButton && voiceCoachState.isEnabled && voiceCoachState.isAvailable && (
             <View style={styles.pausedVoiceContainer}>
               <Text style={styles.pausedVoiceHint}>Say "resume" or "exit"</Text>
               <VoiceButton
@@ -425,7 +453,7 @@ export default function GameScreen() {
       />
 
       {/* Voice Coach Speaking Indicator - Shows when coach gives real-time tips */}
-      {voiceCoachState.isEnabled && voiceCoachState.isSpeaking && isPlaying && (
+      {VoiceIndicator && voiceCoachState.isEnabled && voiceCoachState.isSpeaking && isPlaying && (
         <View style={styles.voiceIndicatorContainer}>
           <VoiceIndicator
             state="speaking"

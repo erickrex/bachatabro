@@ -23,6 +23,7 @@ export function CameraView({
   const cameraRef = useRef<ExpoCameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isReady, setIsReady] = useState(false);
+  const [captureSupported, setCaptureSupported] = useState(true);
 
   // Request camera permissions on mount
   useEffect(() => {
@@ -32,38 +33,56 @@ export function CameraView({
   }, [permission]);
 
   // Capture a single frame
-  const captureFrame = useCallback(async () => {
-    if (!cameraRef.current) return null;
+  const captureFrame = useCallback(async (): Promise<string | null> => {
+    if (!cameraRef.current || !captureSupported) return null;
     
     try {
-      // expo-camera v17+ uses takePictureAsync on the ref
+      // Check if takePictureAsync exists on the ref
+      if (typeof cameraRef.current.takePictureAsync !== 'function') {
+        console.warn('takePictureAsync not available on camera ref');
+        setCaptureSupported(false);
+        return null;
+      }
+      
       const photo = await cameraRef.current.takePictureAsync({
         base64: true,
         quality: 0.5,
         skipProcessing: true,
       });
       return photo?.base64 || null;
-    } catch (error) {
-      // If takePictureAsync fails, the camera might not support it
-      // This can happen on some devices or in certain states
-      console.warn('Frame capture not available:', error);
+    } catch (error: any) {
+      // If takePictureAsync fails, mark it as unsupported
+      if (error?.message?.includes('undefined is not a function') ||
+          error?.message?.includes('not a function')) {
+        console.warn('Frame capture not supported on this device/build');
+        setCaptureSupported(false);
+      } else {
+        console.warn('Frame capture error:', error?.message || error);
+      }
       return null;
     }
-  }, []);
+  }, [captureSupported]);
 
   // Frame capture interval
   useEffect(() => {
-    if (!isRecording || !isReady || !onFrame) {
+    if (!isRecording || !isReady || !onFrame || !captureSupported) {
       return;
     }
 
     const intervalMs = 1000 / frameRate;
     let isCapturing = false;
-    let frameCount = 0;
+    let errorCount = 0;
 
     const interval = setInterval(async () => {
       // Skip if already capturing to avoid queue buildup
       if (isCapturing) {
+        return;
+      }
+
+      // Stop trying after too many errors
+      if (errorCount > 5) {
+        console.warn('Too many capture errors, disabling frame capture');
+        setCaptureSupported(false);
         return;
       }
 
@@ -73,13 +92,10 @@ export function CameraView({
         
         if (base64) {
           onFrame(base64);
-          frameCount++;
+          errorCount = 0; // Reset error count on success
         }
       } catch (error) {
-        // Only log every 10th error to avoid spam
-        if (frameCount % 10 === 0) {
-          console.error('Frame capture error:', error);
-        }
+        errorCount++;
       } finally {
         isCapturing = false;
       }
@@ -88,7 +104,7 @@ export function CameraView({
     return () => {
       clearInterval(interval);
     };
-  }, [isRecording, isReady, onFrame, frameRate, captureFrame]);
+  }, [isRecording, isReady, onFrame, frameRate, captureFrame, captureSupported]);
 
   // Handle permission states
   if (permission === null) {

@@ -9,12 +9,50 @@
  * - P-014: Synchronize video playback
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, useWindowDimensions } from 'react-native';
-import { Video } from 'expo-av';
+import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { Video, AVPlaybackStatus } from 'expo-av';
 import { VideoPlayer } from '../Video/VideoPlayer';
 import { CameraView } from '../Camera/CameraView';
-import { AVPlaybackStatus } from 'expo-av';
+
+// Error boundary to catch rendering errors
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class DualVideoErrorBoundary extends Component<{ children: ReactNode; onError?: (error: string) => void }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode; onError?: (error: string) => void }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('DualVideoView error:', error, errorInfo);
+    this.props.onError?.(error.message);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center', padding: 20 }}>
+            Video playback error. Please restart the app.
+          </Text>
+          <Text style={{ color: '#999', fontSize: 12, textAlign: 'center', padding: 10 }}>
+            {this.state.error?.message}
+          </Text>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export interface DualVideoViewProps {
   videoUri: string;
@@ -67,47 +105,49 @@ export function DualVideoView({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[
-        styles.videoContainer,
-        isLandscape ? styles.landscapeLayout : styles.portraitLayout
-      ]}>
-        {/* Reference Video */}
+    <DualVideoErrorBoundary onError={onError}>
+      <View style={styles.container}>
         <View style={[
-          styles.videoHalf,
-          isLandscape ? styles.landscapeHalf : styles.portraitHalf
+          styles.videoContainer,
+          isLandscape ? styles.landscapeLayout : styles.portraitLayout
         ]}>
-          <VideoPlayer
-            videoUri={videoUri}
-            shouldPlay={isPlaying}
-            onPlaybackUpdate={handlePlaybackUpdate}
-            onEnd={onVideoEnd}
-            onReady={handleVideoReady}
-            onError={onError}
-            onVideoRef={onVideoRef}
-          />
-          <View style={styles.labelContainer}>
-            <Text style={styles.label}>Reference</Text>
+          {/* Reference Video */}
+          <View style={[
+            styles.videoHalf,
+            isLandscape ? styles.landscapeHalf : styles.portraitHalf
+          ]}>
+            <VideoPlayer
+              videoUri={videoUri}
+              shouldPlay={isPlaying}
+              onPlaybackUpdate={handlePlaybackUpdate}
+              onEnd={onVideoEnd}
+              onReady={handleVideoReady}
+              onError={onError}
+              onVideoRef={onVideoRef}
+            />
+            <View style={styles.labelContainer}>
+              <Text style={styles.label}>Reference</Text>
+            </View>
           </View>
-        </View>
 
-        {/* User Camera Feed */}
-        <View style={[
-          styles.videoHalf,
-          isLandscape ? styles.landscapeHalf : styles.portraitHalf
-        ]}>
-          <CameraView
-            onFrame={handleCameraFrame}
-            isRecording={isPlaying}
-            mirror={true}
-            frameRate={10}
-          />
-          <View style={styles.labelContainer}>
-            <Text style={styles.label}>You</Text>
+          {/* User Camera Feed */}
+          <View style={[
+            styles.videoHalf,
+            isLandscape ? styles.landscapeHalf : styles.portraitHalf
+          ]}>
+            <CameraView
+              onFrame={handleCameraFrame}
+              isRecording={isPlaying}
+              mirror={true}
+              frameRate={10}
+            />
+            <View style={styles.labelContainer}>
+              <Text style={styles.label}>You</Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </DualVideoErrorBoundary>
   );
 }
 
